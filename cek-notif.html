@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cek Notifikasi</title>
+<style>
+body{font-family:system-ui;background:#0b1220;color:#e2e8f0;padding:20px;line-height:1.7}
+.k{background:#1e293b;padding:12px;border-radius:8px;margin:8px 0}
+.v{font-weight:700;color:#22c55e} .x{font-weight:700;color:#ef4444}
+button{background:#e0334f;color:#fff;border:0;padding:14px 20px;border-radius:8px;font-size:16px;width:100%;margin-top:16px}
+</style></head><body>
+<h2>Cek Notifikasi Montera</h2>
+<div class="k">Izin notifikasi: <span id="izin">-</span></div>
+<div class="k">Service worker: <span id="sw">-</span></div>
+<div class="k">Langganan push: <span id="sub">-</span></div>
+<div class="k">Mode tampilan: <span id="mode">-</span></div>
+<button onclick="minta()">Minta izin notifikasi</button>
+<script>
+function tulis(id, teks, ok){
+  var e = document.getElementById(id);
+  e.textContent = teks; e.className = ok ? 'v' : 'x';
+}
+tulis('izin', Notification.permission, Notification.permission === 'granted');
+tulis('mode', window.matchMedia('(display-mode: standalone)').matches ? 'PWA (standalone)' : 'browser biasa', true);
+
+navigator.serviceWorker.getRegistration().then(function(reg){
+  if (!reg) { tulis('sw','tidak ada',false); return; }
+  tulis('sw','aktif: ' + (reg.active ? reg.active.scriptURL : '-'), true);
+  return reg.pushManager.getSubscription().then(function(s){
+    tulis('sub', s ? 'ADA (' + s.endpoint.slice(-12) + ')' : 'TIDAK ADA', !!s);
+  });
+}).catch(function(e){ tulis('sw','error: ' + e, false); });
+
+function minta(){
+  Notification.requestPermission().then(function(p){
+    alert('Hasil: ' + p);
+    location.reload();
+  });
+}
+</script></body></html>

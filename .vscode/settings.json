@@ -1,0 +1,7 @@
+{
+  "chat.tools.terminal.autoApprove": {
+    "mv": true,
+    "cp": true
+  },
+  "vscode-pets.petSize": "small"
+}

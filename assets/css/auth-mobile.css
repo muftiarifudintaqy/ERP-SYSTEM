@@ -1,0 +1,57 @@
+/* ====== LOGIN & REGISTER — MOBILE (tidak menyentuh sidebar/dashboard) ====== */
+@media (max-width: 767.98px) {
+
+  .fullscreen-container {
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    height: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 24px 16px !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    background-attachment: scroll !important;
+  }
+
+  .login-container {
+    width: 100% !important;
+    max-width: 360px !important;
+    margin: 0 auto !important;
+    padding: 28px 22px !important;
+    border-radius: 20px !important;
+    max-height: 88vh !important;
+    overflow-y: auto !important;
+  }
+
+  /* logo center & proporsional */
+  .login-logo { text-align: center !important; margin-bottom: 14px !important; }
+  .login-logo img {
+    display: block !important;
+    margin: 0 auto !important;
+    width: 155px !important;
+    max-width: 55% !important;
+    height: auto !important;
+  }
+
+  /* label rata kiri */
+  .login-container label { display: block !important; text-align: left !important; margin-bottom: 5px !important; }
+
+  /* input & tombol */
+  .login-container .form-control { font-size: 16px !important; min-height: 46px !important; }
+  .login-container .btn { width: 100% !important; min-height: 46px !important; }
+  .login-container .col-lg-12 { width: 100% !important; max-width: 100% !important; flex: 0 0 100% !important; }
+
+  /* ikon mata di dalam kotak password */
+  .login-container .div-icon { position: relative !important; }
+  .login-container .div-icon .icon-right {
+    position: absolute !important;
+    right: 12px !important; top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 10 !important; color: #9199a8 !important;
+  }
+  .login-container .div-icon .form-control { padding-right: 44px !important; }
+
+  /* syarat password ringkas */
+  .password-requirements small { font-size: .74rem !important; }
+}

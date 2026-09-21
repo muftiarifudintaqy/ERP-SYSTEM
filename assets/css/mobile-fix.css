@@ -1,0 +1,434 @@
+/* ============ PERBAIKAN TAMPILAN HP - GLOBAL ============ */
+@media (max-width: 767.98px) {
+
+  /* --- Tabel: geser samping, jangan bikin halaman melar --- */
+  .table-responsive{ -webkit-overflow-scrolling:touch; overflow-x:auto; }
+  .table{ font-size:12.5px; }
+  .table thead th{ padding:10px 8px !important; font-size:11.5px; }
+  .table tbody td{ padding:10px 8px !important; font-size:12.5px; }
+  .val-pill{ font-size:10px !important; min-width:auto !important; padding:0 4px !important; }
+
+  /* --- Kartu & container --- */
+  .container-fluid{ padding-left:10px !important; padding-right:10px !important; }
+  .card-header{ height:auto !important; padding:12px !important; }
+  .card-body{ padding:12px !important; }
+  .card-header .d-flex{ flex-wrap:wrap; gap:8px; }
+  .card-header h5, .card-header h6{ font-size:1rem; width:100%; }
+
+  /* --- Tombol: jangan keluar layar --- */
+  .btn{ font-size:12.5px; padding:6px 12px; height:auto; white-space:nowrap; }
+  .card-header .btn, .card-header a.btn{ flex:1 1 auto; min-width:0; }
+
+  /* --- Form filter: satu kolom penuh --- */
+  .search-form .row > [class*="col-"]{ width:100% !important; flex:0 0 100% !important; max-width:100% !important; margin-bottom:8px; }
+  .form-control, .form-select{ height:38px; font-size:14px; }
+  input[type="month"], input[type="date"]{ width:100% !important; }
+
+  /* --- Kartu statistik absensi --- */
+  .st-row{ grid-template-columns:repeat(2,1fr) !important; gap:8px !important; }
+  .st-card{ padding:10px !important; gap:8px !important; }
+  .st-ic{ width:34px !important; height:34px !important; font-size:.95rem !important; }
+  .st-val{ font-size:1.15rem !important; }
+  .st-lbl{ font-size:.6rem !important; }
+
+  /* --- Halaman Absensi Saya --- */
+  .pm-pills{ display:grid !important; grid-template-columns:repeat(2,1fr); gap:8px !important; }
+  .pm-pill{ min-width:0 !important; }
+  #pmBtnGroup{ display:grid !important; grid-template-columns:1fr 1fr; gap:8px; }
+  #pmBtnGroup .btn{ width:100%; font-size:11.5px; padding:8px 4px; white-space:normal; line-height:1.3; }
+  #pmBtnGroup .btn small{ display:block; font-size:10px; }
+  .att-status-card .d-flex{ flex-wrap:wrap; gap:10px; }
+  .att-status-card .btn, .att-status-card a.btn{ flex:1 1 auto; }
+
+  /* --- Daftar wajah karyawan --- */
+  .fl-grid{ grid-template-columns:repeat(2,1fr) !important; gap:10px !important; padding:12px !important; }
+  .fl-foto, .fl-noimg{ height:120px !important; }
+  .fl-nm{ font-size:.78rem !important; }
+
+  /* --- Chat Grup: topbar jangan numpuk --- */
+  .ch-bub{ max-width:82% !important; }
+
+  /* --- Modal & popup --- */
+  .modal-dialog{ margin:8px; }
+  .swal2-popup{ width:92% !important; font-size:14px; }
+
+  /* --- Pagination --- */
+  .pagination{ justify-content:center; flex-wrap:wrap; gap:4px; }
+  .page-item{ margin-right:2px; }
+
+  /* --- Cegah halaman melar horizontal --- */
+  body{ overflow-x:hidden; }
+  img{ max-width:100%; height:auto; }
+}
+
+/* Layar sangat kecil */
+@media (max-width: 380px) {
+  .st-row{ grid-template-columns:1fr !important; }
+  .pm-pills{ grid-template-columns:1fr !important; }
+  #pmBtnGroup{ grid-template-columns:1fr !important; }
+  .fl-grid{ grid-template-columns:1fr !important; }
+}
+
+/* ============ PERBAIKAN TAMPILAN POPUP SWEETALERT ============ */
+.swal2-container{ z-index:100000 !important; }
+.swal2-container.swal2-backdrop-show,
+.swal2-container.swal2-shown{ background:rgba(15,18,28,.55) !important; }
+
+.swal2-popup{
+  background:#ffffff !important;
+  border-radius:18px !important;
+  box-shadow:0 24px 70px rgba(0,0,0,.28) !important;
+  padding:26px 24px 20px !important;
+  width:auto !important;
+  max-width:420px !important;
+}
+.swal2-title{
+  color:#1e293b !important;
+  font-size:1.15rem !important;
+  font-weight:700 !important;
+  padding:0 !important;
+  margin:6px 0 8px !important;
+}
+.swal2-html-container{
+  color:#64748b !important;
+  font-size:.88rem !important;
+  line-height:1.55 !important;
+  margin:0 !important;
+  padding:0 !important;
+}
+.swal2-icon{ margin:6px auto 14px !important; }
+.swal2-actions{ margin:20px 0 0 !important; gap:10px !important; }
+.swal2-styled{
+  border-radius:10px !important;
+  padding:10px 22px !important;
+  font-size:.88rem !important;
+  font-weight:600 !important;
+  box-shadow:none !important;
+  margin:0 !important;
+}
+.swal2-styled.swal2-cancel{ background:#f1f5f9 !important; color:#334155 !important; }
+.swal2-timer-progress-bar{ background:rgba(0,0,0,.12) !important; }
+
+/* ============ KALENDER DI HP ============ */
+@media (max-width: 767.98px) {
+  /* wadah kalender boleh digeser mendatar bila tetap sempit */
+  .calendar-wrapper, .calendar-container, .cal-wrap,
+  .table-calendar, .fc { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* sel kalender lebih rapat supaya 7 kolom muat */
+  .calendar-table, table.calendar, .table-calendar table { width: 100% !important; table-layout: fixed !important; }
+  .calendar-table th, .calendar-table td,
+  table.calendar th, table.calendar td,
+  .table-calendar th, .table-calendar td {
+    padding: 4px 2px !important;
+    font-size: 11px !important;
+    height: auto !important;
+    min-height: 34px !important;
+    text-align: center !important;
+    word-break: break-word;
+  }
+
+  /* nama hari dipendekkan */
+  .calendar-table thead th, table.calendar thead th { font-size: 10px !important; letter-spacing: 0 !important; }
+
+  /* judul bulan & tombol navigasi sebaris rapi */
+  .calendar-header, .cal-header {
+    display: flex !important; align-items: center !important;
+    justify-content: space-between !important; gap: 8px; flex-wrap: nowrap !important;
+  }
+  .calendar-header h3, .calendar-header h4, .calendar-header h5,
+  .cal-header h3, .cal-header h4, .cal-header h5 { font-size: 1rem !important; margin: 0 !important; }
+
+  /* badge event di dalam sel */
+  .calendar-event, .cal-event, .event-dot {
+    font-size: 9px !important; padding: 1px 3px !important;
+    line-height: 1.2 !important; display: block; margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+}
+
+/* ============ FULLCALENDAR DI HP ============ */
+@media (max-width: 767.98px) {
+  #calendar { height: auto !important; min-height: 420px; padding: 8px !important; border-width: 1px !important; }
+  #calendar-container { padding-left: 0 !important; padding-right: 0 !important; }
+
+  .fc .fc-toolbar.fc-header-toolbar { flex-direction: column; gap: 8px; margin-bottom: 10px !important; }
+  .fc .fc-toolbar-title { font-size: 1rem !important; }
+  .fc .fc-button { padding: 4px 9px !important; font-size: .75rem !important; }
+  .fc .fc-toolbar-chunk { display: flex; gap: 4px; }
+
+  .fc .fc-col-header-cell-cushion { font-size: 10px !important; padding: 4px 1px !important; }
+  .fc .fc-daygrid-day-number { font-size: 11px !important; padding: 2px 4px !important; }
+  .fc .fc-daygrid-day-frame { min-height: 46px !important; }
+  .fc .fc-daygrid-event { font-size: 9px !important; padding: 0 2px !important; margin-top: 1px !important; }
+  .fc .fc-daygrid-more-link { font-size: 9px !important; }
+  .fc .fc-scrollgrid { border-width: 1px !important; }
+}
+
+/* ===== FULLCALENDAR HP: jangan meluber ===== */
+@media (max-width:767.98px){
+  #calendar{height:auto!important;min-height:0!important;padding:6px!important;border-width:1px!important;overflow:hidden!important}
+  .fc,.fc-view-harness,.fc-scrollgrid{width:100%!important;max-width:100%!important}
+  .fc-scrollgrid,.fc-scrollgrid table{table-layout:fixed!important;width:100%!important}
+  .fc-scrollgrid-sync-table,.fc-col-header{width:100%!important}
+  .fc th,.fc td{overflow:hidden!important}
+  .fc .fc-col-header-cell-cushion{font-size:9px!important;padding:4px 0!important;display:block!important;text-align:center!important}
+  .fc .fc-daygrid-day-number{font-size:11px!important;padding:2px 3px!important}
+  .fc .fc-daygrid-day-frame{min-height:42px!important}
+  .fc .fc-toolbar.fc-header-toolbar{flex-direction:column!important;gap:6px!important;margin-bottom:8px!important}
+  .fc .fc-toolbar-title{font-size:.95rem!important}
+  .fc .fc-button{padding:4px 9px!important;font-size:.72rem!important}
+  .fc .fc-daygrid-event{font-size:8px!important;padding:0 2px!important}
+
+  /* empty state jangan makan satu layar */
+  #calendar-container .card-body img,
+  .text-center img[src*="empty"],
+  .text-center img[src*="kosong"]{max-width:150px!important;height:auto!important}
+
+  /* tabel apapun jangan kepotong */
+  .table-responsive{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+}
+
+/* ===== PANEL NOTIFIKASI DI HP: muat layar, jangan meluber ===== */
+@media (max-width:767.98px){
+  .notification-container{position:static!important}
+
+  #notificationDropdown.notification-dropdown-panel{
+    position:fixed!important;
+    top:64px!important;
+    left:8px!important;
+    right:8px!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    transform:none!important;
+    margin:0!important;
+    border-radius:14px!important;
+    box-shadow:0 18px 46px rgba(0,0,0,.20)!important;
+    max-height:72vh!important;
+    display:none;
+    flex-direction:column!important;
+    overflow:hidden!important;
+    z-index:1080!important;
+  }
+  #notificationDropdown.notification-dropdown-panel.show,
+  #notificationDropdown.notification-dropdown-panel[style*="block"]{display:flex!important}
+
+  /* header */
+  .notification-preview-header{padding:11px 13px!important;flex:0 0 auto!important;gap:8px!important}
+  .notification-preview-header h6{font-size:.92rem!important;margin:0!important}
+  .notification-preview-header span{font-size:.7rem!important}
+  .notification-preview-icon-button{flex:0 0 auto!important;width:34px!important;height:34px!important;padding:0!important}
+
+  /* tab: bisa digeser kalau sempit */
+  .notification-preview-tabs{
+    flex:0 0 auto!important;
+    overflow-x:auto!important;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    padding:0 6px!important;
+  }
+  .notification-preview-tabs::-webkit-scrollbar{display:none}
+  .notification-preview-tab{
+    flex:1 1 auto!important;
+    min-width:0!important;
+    white-space:nowrap!important;
+    font-size:.74rem!important;
+    padding:9px 8px!important;
+    gap:4px!important;
+  }
+  .notification-preview-tab i{font-size:.85rem!important}
+
+  /* daftar isi: ini yang di-scroll */
+  .notification-preview-list{
+    flex:1 1 auto!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch;
+    min-height:0!important;
+    max-height:none!important;
+  }
+  .notification-preview-list > *{
+    padding:10px 13px!important;
+    font-size:.8rem!important;
+    word-break:break-word!important;
+    overflow-wrap:anywhere!important;
+  }
+
+  .notification-preview-footer{flex:0 0 auto!important;padding:9px!important}
+  .notification-preview-footer a{font-size:.82rem!important}
+}
+
+/* ===== FULLCALENDAR HP v2: biarkan FC hitung sendiri, cuma batasi lebarnya ===== */
+@media (max-width:767.98px){
+  #calendar{
+    height:auto!important;
+    width:100%!important;
+    max-width:100%!important;
+    padding:4px!important;
+    overflow-x:hidden!important;
+  }
+  #calendar .fc{width:100%!important;max-width:100%!important}
+  #calendar .fc-view-harness{width:100%!important;max-width:100%!important;overflow:hidden!important}
+
+  /* batalkan table-layout:fixed dari blok sebelumnya */
+  #calendar .fc-scrollgrid,
+  #calendar .fc-scrollgrid table{table-layout:auto!important;width:100%!important;max-width:100%!important}
+
+  #calendar .fc-col-header-cell-cushion{font-size:9px!important;padding:4px 0!important}
+  #calendar .fc-daygrid-day-number{font-size:10px!important;padding:2px!important}
+  #calendar .fc-daygrid-day-frame{min-height:38px!important}
+  #calendar .fc-scroller{overflow:visible!important}
+}
+
+/* ===== KALENDER HP v3: spesifisitas tinggi, menang lawan style inline ===== */
+@media (max-width:767.98px){
+  html body #calendar-container,
+  html body #event-details{
+    width:100%!important;
+    max-width:100%!important;
+    flex:0 0 100%!important;
+    padding-left:10px!important;
+    padding-right:10px!important;
+    margin-bottom:16px!important;
+  }
+  html body #event-details{height:auto!important;max-height:none!important}
+
+  html body #calendar-container #calendar{
+    height:auto!important;
+    min-height:0!important;
+    width:100%!important;
+    max-width:100%!important;
+    padding:6px!important;
+    overflow:hidden!important;
+    border-width:1px!important;
+  }
+  html body #calendar .fc{width:100%!important;max-width:100%!important}
+  html body #calendar .fc-view-harness{width:100%!important;height:auto!important;overflow:hidden!important}
+  html body #calendar .fc-scrollgrid,
+  html body #calendar .fc-scrollgrid table{width:100%!important;max-width:100%!important;table-layout:auto!important}
+  html body #calendar .fc-scroller{overflow:visible!important;height:auto!important}
+  html body #calendar .fc-col-header-cell-cushion{font-size:9px!important;padding:5px 0!important}
+  html body #calendar .fc-daygrid-day-number{font-size:10px!important;padding:2px!important}
+  html body #calendar .fc-daygrid-day-frame{min-height:36px!important}
+
+  /* jarak + padding kartu kosong di bawah kalender */
+  html body #event-details{
+    padding:18px 16px!important;
+    margin-top:14px!important;
+    border-radius:12px!important;
+  }
+  html body #event-details img{
+    max-width:170px!important;
+    height:auto!important;
+    margin:8px auto 14px!important;
+    display:block!important;
+  }
+  html body #event-details h4,
+  html body #event-details h5{font-size:1.05rem!important;margin-bottom:6px!important}
+  html body #event-details p{font-size:.85rem!important;margin-bottom:0!important}
+
+  /* tabel: header jangan ketiban */
+  html body .mfx-scroll{overflow-x:auto!important;-webkit-overflow-scrolling:touch;width:100%}
+  html body .mfx-scroll > table{min-width:600px!important;width:auto!important}
+  html body .mfx-scroll th,
+  html body .mfx-scroll td{
+    white-space:nowrap!important;
+    padding:10px 14px!important;
+    font-size:.82rem!important;
+  }
+}
+
+/* ===== TABEL DI HP: geser mendatar di dalam kartu, header jangan tindih ===== */
+@media (max-width:767.98px){
+  html body .card .table-responsive,
+  html body .card-body .table-responsive{
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+    border-radius:8px!important;
+  }
+  html body .card .table-responsive > table,
+  html body .card-body .table-responsive > table{
+    width:max-content!important;
+    min-width:100%!important;
+    max-width:none!important;
+    table-layout:auto!important;
+    border-collapse:collapse!important;
+    border-spacing:0!important;
+    margin-bottom:0!important;
+  }
+  html body .card .table-responsive th,
+  html body .card .table-responsive td,
+  html body .card-body .table-responsive th,
+  html body .card-body .table-responsive td{
+    white-space:nowrap!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    padding:11px 16px!important;
+    font-size:.8rem!important;
+    text-align:left!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    vertical-align:middle!important;
+  }
+  html body .card .table-responsive th{
+    font-weight:600!important;
+    background:#f8fafc!important;
+    position:static!important;
+  }
+}
+
+/* ===== KURUNG TABEL: geser di dalam kartu saja, halaman tidak ikut ===== */
+@media (max-width:767.98px){
+  /* halaman tidak boleh geser mendatar sama sekali */
+  html,html body{max-width:100%!important;overflow-x:hidden!important}
+
+  /* rantai induk harus boleh menyusut, kalau tidak dia melar ikut isi tabel */
+  html body .container-fluid,
+  html body .container,
+  html body .row,
+  html body [class*="col-"],
+  html body .card,
+  html body .card-body{
+    min-width:0!important;
+  }
+  html body .card{overflow:hidden!important}
+
+  /* hanya kotak ini yang boleh digeser */
+  html body .card .table-responsive,
+  html body .card-body .table-responsive{
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:scroll!important;
+    overflow-y:hidden!important;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain!important;
+    touch-action:pan-x!important;
+  }
+  html body .card .table-responsive::-webkit-scrollbar{height:5px}
+  html body .card .table-responsive::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+
+  /* sel: lebar ikut isi, tidak saling tindih */
+  html body .card .table-responsive th,
+  html body .card .table-responsive td,
+  html body .card-body .table-responsive th,
+  html body .card-body .table-responsive td{
+    position:static!important;
+    float:none!important;
+    display:table-cell!important;
+    white-space:nowrap!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    overflow:visible!important;
+    padding:11px 16px!important;
+    font-size:.8rem!important;
+    text-align:left!important;
+  }
+}

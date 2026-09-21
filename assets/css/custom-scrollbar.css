@@ -1,0 +1,107 @@
+/**
+ * Custom Horizontal Scrollbar
+ * Universal custom scrollbar untuk AG-Grid dan container lainnya
+ * 
+ * CARA PENGGUNAAN:
+ * 
+ * 1. Tambahkan attribute data-custom-scrollbar pada wrapper element:
+ *    <div id="myGrid" class="ag-theme-quartz" data-custom-scrollbar>
+ *      <!-- Grid content -->
+ *    </div>
+ * 
+ * 2. Tambahkan element scrollbar setelah wrapper:
+ *    <div class="custom-scrollbar">
+ *      <div class="scrollbar-track">
+ *        <div class="scrollbar-thumb"></div>
+ *      </div>
+ *    </div>
+ * 
+ * 3. JavaScript akan otomatis mendeteksi dan menginisialisasi scrollbar
+ * 
+ * 4. Untuk update manual: CustomScrollbar.update()
+ * 
+ * CATATAN:
+ * - Scrollbar otomatis hide jika tidak ada overflow
+ * - Support drag & drop thumb
+ * - Support click track untuk jump
+ * - Auto sync dengan native scroll
+ */
+
+/* Hide native horizontal scrollbar for AG-Grid */
+[data-custom-scrollbar] .ag-body-horizontal-scroll {
+  overflow-x: hidden !important;
+}
+
+/* For regular tables/containers - hide native scrollbar */
+[data-custom-scrollbar]:not(.ag-theme-quartz) {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+}
+
+[data-custom-scrollbar]:not(.ag-theme-quartz)::-webkit-scrollbar {
+  display: none;
+}
+
+[data-custom-scrollbar]:not(.ag-theme-quartz) {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom Scrollbar Container */
+.custom-scrollbar {
+  width: 100%;
+  height: 12px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  margin-top: 8px;
+  position: relative;
+  cursor: pointer;
+  display: none;
+}
+
+.custom-scrollbar.active {
+  display: block;
+}
+
+.custom-scrollbar .scrollbar-track {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.custom-scrollbar .scrollbar-thumb {
+  height: 100%;
+  background: linear-gradient(180deg, #6c757d 0%, #495057 100%);
+  border-radius: 6px;
+  cursor: grab;
+  position: absolute;
+  left: 0;
+  transition: background 0.2s;
+  min-width: 50px;
+}
+
+.custom-scrollbar .scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #495057 0%, #343a40 100%);
+}
+
+.custom-scrollbar .scrollbar-thumb:active {
+  cursor: grabbing;
+  background: linear-gradient(180deg, #343a40 0%, #212529 100%);
+}
+
+.custom-scrollbar .scrollbar-thumb::before {
+  content: "\22ee\22ee\22ee";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 8px;
+  letter-spacing: 2px;
+}
+
+/* Variant untuk table biasa (non AG-Grid) */
+[data-custom-scrollbar]:not(.ag-theme-quartz) {
+  overflow-x: hidden !important;
+}

@@ -1,0 +1,2467 @@
+<?php
+
+class Template
+{
+    public function index() {}
+
+    function endpoint_url()
+    {
+        return 'https://endpoint.bhskin.co.id/';
+        // return base_url();
+    }
+
+    function hex_to_rgb($hex, $opacity = 1)
+    {
+        // Remove '#' if present
+        $hex = str_replace('#', '', $hex);
+
+        // Extract RGB components
+        $r = hexdec(substr($hex, 0, 2));
+        $g = hexdec(substr($hex, 2, 2));
+        $b = hexdec(substr($hex, 4, 2));
+
+        // Ensure opacity value is within range [0, 1]
+        $opacity = max(0, min(1, $opacity));
+
+        // Construct RGBA string
+        $rgba = "rgba($r, $g, $b, $opacity)";
+
+        return $rgba;
+    }
+
+    function generateNumber($length = 12)
+    {
+        $characters = '0123456789';
+        $charactersLength = strlen($characters);
+        $randomCode = '';
+
+        for ($i = 0; $i < $length; $i++) {
+            $randomCode .= $characters[rand(0, $charactersLength - 1)];
+        }
+
+        return $randomCode;
+    }
+
+    function get_param()
+    {
+        $query_string = $_SERVER['QUERY_STRING'];
+        parse_str($query_string, $params);
+        // unset($params['page']);
+        $new_query_string = http_build_query($params);
+        return '?' . $new_query_string;
+    }
+    function get_param_without($column)
+    {
+        $query_string = $_SERVER['QUERY_STRING'];
+        parse_str($query_string, $params);
+        unset($params['page']);
+        unset($params[$column]);
+        $new_query_string = http_build_query($params);
+        return '?' . $new_query_string;
+    }
+    function get_param_without_page()
+    {
+        $query_string = $_SERVER['QUERY_STRING'];
+        parse_str($query_string, $params);
+        unset($params['page']);
+        $new_query_string = http_build_query($params);
+        return '?' . $new_query_string;
+    }
+    function get_param_without_order_status()
+    {
+        $query_string = $_SERVER['QUERY_STRING'];
+        parse_str($query_string, $params);
+        unset($params['order_status']);
+        unset($params['page']);
+        $new_query_string = http_build_query($params);
+        return '?' . $new_query_string;
+    }
+    function get_param_without_status()
+    {
+        $query_string = $_SERVER['QUERY_STRING'];
+        parse_str($query_string, $params);
+        unset($params['status']);
+        unset($params['page']);
+        $new_query_string = http_build_query($params);
+        return '?' . $new_query_string;
+    }
+    function get_param_without_keyword_category()
+    {
+        $query_string = $_SERVER['QUERY_STRING'];
+        parse_str($query_string, $params);
+        unset($params['keyword_category']);
+        unset($params['page']);
+        $new_query_string = http_build_query($params);
+        return '?' . $new_query_string;
+    }
+    function month_format_indo($date)
+    {
+        $month = array(
+            '',
+            'Januari',
+            'Februari',
+            'Maret',
+            'April',
+            'Mei',
+            'Juni',
+            'Juli',
+            'Agustus',
+            'September',
+            'Oktober',
+            'November',
+            'Desember'
+        );
+        $date = $month[intval(DATE('m', strtotime($date)))];
+        return $date;
+    }
+    function date_format_indo($date)
+    {
+        $month = array(
+            '',
+            'Januari',
+            'Februari',
+            'Maret',
+            'April',
+            'Mei',
+            'Juni',
+            'Juli',
+            'Agustus',
+            'September',
+            'Oktober',
+            'November',
+            'Desember'
+        );
+        if ($date) {
+            $date = DATE('d', strtotime($date)) . ' ' . substr($month[intval(DATE('m', strtotime($date)))], 0, 3) . ' ' . DATE('Y', strtotime($date));
+        } else {
+            $date = '';
+        }
+        return $date;
+    }
+    function date_format_indo_with_time($date)
+    {
+        $month = array(
+            '',
+            'Januari',
+            'Februari',
+            'Maret',
+            'April',
+            'Mei',
+            'Juni',
+            'Juli',
+            'Agustus',
+            'September',
+            'Oktober',
+            'November',
+            'Desember'
+        );
+        if ($date) {
+            $date = DATE('d', strtotime($date)) . ' ' . substr($month[intval(DATE('m', strtotime($date)))], 0, 3) . ' ' . DATE('Y', strtotime($date)) . ' ' . DATE('H:i', strtotime($date));
+        } else {
+            $date = '';
+        }
+        return $date;
+    }
+    function api_key_ss()
+    {
+        return app_env('SMARTSELLER_API_AUTHORIZATION', '');
+    }
+
+    function rapidapi_key()
+    {
+        return app_env('RAPIDAPI_KEY', '');
+    }
+    function api_orders_ss($dt)
+    {
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://api.smartseller.co.id/api/open/order?start_date=' . $dt['start_date'] . '&end_date=' . $dt['until_date'] . '&per_page=100&pagination_offset=' . $dt['page'],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER => array(
+                'Authorization: ' . $this->api_key_ss()
+            ),
+        ));
+
+        $response = curl_exec($curl);
+
+        curl_close($curl);
+        return json_decode($response, true);
+    }
+
+    function api_products_ss($dt)
+    {
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://api.smartseller.co.id/api/open/product?per_page=100&pagination_offset=' . $dt['page'],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER => array(
+                'Authorization: ' . $this->api_key_ss()
+            ),
+        ));
+
+        $response = curl_exec($curl);
+
+        curl_close($curl);
+        return json_decode($response, true);
+    }
+
+    function pagination($page, $current_page, $url)
+    {
+        if ($page > 0) {
+            $page_limit = 4;
+            if ($page < 5) {
+                $page_limit = $page - 1;
+            }
+
+            $item .= '<a class="btn btn-pagination me-1" style="margin-bottom:4px" style="margin-bottom:10px" href="' . $url . '&page=1"><i class="bi bi-chevron-double-left"></i></a>';
+            if ($current_page <= 1) {
+                $prev_page = 1;
+            } else {
+                $prev_page = $current_page - 1;
+            }
+            $item .= '<a class="btn btn-pagination me-1" style="margin-bottom:4px" style="margin-bottom:10px" href="' . $url . '&page=' . ($prev_page) . '"><i class="bi bi-chevron-left"></i></a>';
+            $start = $current_page - 2;
+            $end = $current_page + 2;
+            if ($end > $page) {
+                $end = $page;
+                $start = $end - $page_limit;
+            }
+            if ($start < 1) {
+                $start = 1;
+                $end = $start + $page_limit;
+            }
+            for ($i = $start; $i <= $end; $i++) {
+                if ($current_page != $i) {
+                    $class = 'btn-pagination';
+                } else {
+                    $class = 'btn-pagination-active';
+                }
+                $item .= '<a class="btn ' . $class . ' me-1" style="margin-bottom:4px" style="margin-bottom:10px" href="' . $url . '&page=' . ($i) . '">' . $i . '</a>';
+            }
+            $next_page = $current_page + 1;
+            if ($next_page > $page) {
+                $next_page = $page;
+            }
+            $item .= '<a class="btn btn-pagination me-1" style="margin-bottom:4px" style="margin-bottom:10px" href="' . $url . '&page=' . ($next_page) . '"><i class="bi bi-chevron-right"></i></a>';
+            $item .= '<a class="btn btn-pagination me-1" style="margin-bottom:4px" style="margin-bottom:10px" href="' . $url . '&page=' . ($page) . '"><i class="bi bi-chevron-double-right"></i></a>';
+        } else {
+            $item .= '<div class="bg-danger p-3 br-10">Hasil pencarian tidak ditemukan, silahkan gunakan filter lain!</div>';
+        }
+        return '<div class="col-md-12">' . $item . '</div>';
+    }
+
+    function option_pagination($page, $current_page, $url)
+    {
+        if ($page > 0) {
+            $page_limit = 4;
+            if ($page < 5) {
+                $page_limit = $page - 1;
+            }
+
+            $item = '<a class="btn btn-pagination me-1" href="' . $url . '&page=1&limit=' . $limit . '"><i class="bi bi-chevron-double-left"></i></a>';
+
+            $prev_page = ($current_page <= 1) ? 1 : $current_page - 1;
+            $item .= '<a class="btn btn-pagination me-1" href="' . $url . '&page=' . $prev_page . '&limit=' . $limit . '"><i class="bi bi-chevron-left"></i></a>';
+
+            $start = max(1, $current_page - 2);
+            $end = min($page, $current_page + 2);
+
+            for ($i = $start; $i <= $end; $i++) {
+                $class = ($current_page == $i) ? 'btn-pagination-active' : 'btn-pagination';
+                $item .= '<a class="btn ' . $class . ' me-1" href="' . $url . '&page=' . $i . '&limit=' . $limit . '">' . $i . '</a>';
+            }
+
+            $next_page = ($current_page >= $page) ? $page : $current_page + 1;
+            $item .= '<a class="btn btn-pagination me-1" href="' . $url . '&page=' . $next_page . '&limit=' . $limit . '"><i class="bi bi-chevron-right"></i></a>';
+            $item .= '<a class="btn btn-pagination me-1" href="' . $url . '&page=' . $page . '&limit=' . $limit . '"><i class="bi bi-chevron-double-right"></i></a>';
+        } else {
+            $item = '<div class="bg-danger p-3 br-10">Hasil pencarian tidak ditemukan, silahkan gunakan filter lain!</div>';
+        }
+
+        return '<div class="col-md-12">' . $item . '</div>';
+    }
+
+    function curlRequest($url, $headers = [])
+    {
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => $headers,
+        ]);
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+        curl_close($curl);
+
+        if ($err) {
+            return [
+                "status" => false,
+                "msg" => "cURL Error: $err",
+                "data" => []
+            ];
+        }
+
+        return json_decode($response, true);
+    }
+
+    function getDataFromFirstEndpoint($username)
+    {
+        $url = "https://tiktok-video-no-watermark10.p.rapidapi.com/index/Tiktok/getUserInfo?unique_id=" . urlencode($username);
+        $headers = [
+            "Content-Type: application/json",
+            "x-rapidapi-host: tiktok-video-no-watermark10.p.rapidapi.com",
+            "x-rapidapi-key: " . $this->rapidapi_key()
+        ];
+
+        return $this->curlRequestWithRetry($url, $headers, function ($resp) {
+            return intval($resp['code'] ?? -1) === 0 && !empty($resp['data']['user']['uniqueId']);
+        });
+    }
+
+    // function getDataFromSearchEndpoint($username)
+    // {
+    //     $keyword = urlencode($username);
+    //     $url = "https://tiktok-api23.p.rapidapi.com/api/search/account?keyword=$keyword&cursor=0&search_id=0";
+    //     $headers = [
+    //         "x-rapidapi-host: tiktok-api23.p.rapidapi.com",
+    //         "x-rapidapi-key: " . $this->rapidapi_key()
+    //     ];
+
+    //     return $this->curlRequestWithRetry($url, $headers, function ($resp) {
+    //         $ok = isset($resp['status_code']) ? intval($resp['status_code']) === 0 : (isset($resp['statusCode']) && intval($resp['statusCode']) === 0);
+    //         return $ok && !empty($resp['user_list'][0]['user_info']);
+    //     });
+    // }
+
+    function get_account_id($type, $url, $influencer_id = null)
+    {
+        $response = [
+            "status" => true,
+            "msg" => "",
+            "data" => []
+        ];
+
+        $uri = explode("/", parse_url($url, PHP_URL_PATH));
+        $username = $uri[1] ?? null;
+
+        if (empty($url) || empty($username)) {
+            return [
+                "status" => false,
+                "msg" => "Pastikan URL sudah diisi!",
+                "data" => []
+            ];
+        }
+
+        if ($type == "Instagram") {
+            $username = ltrim($username, '@');
+
+            $api_url = "https://instagram-looter2.p.rapidapi.com/profile2?username=" . urlencode($username);
+            $headers = [
+                "Content-Type: application/json",
+                "x-rapidapi-host: instagram-looter2.p.rapidapi.com",
+                "x-rapidapi-key: " . $this->rapidapi_key()
+            ];
+
+            $resp = $this->curlRequestWithRetry($api_url, $headers, function ($r) {
+                return !empty($r['status']) && $r['status'] === true && !empty($r['pk']);
+            });
+
+            $resp_ok = !empty($resp['status']) && $resp['status'] === true && !empty($resp['pk']);
+
+            if ($resp_ok) {
+                $img = '';
+                if (!empty($resp['hd_profile_pic_url_info']['url'])) {
+                    $img = (string)$resp['hd_profile_pic_url_info']['url'];
+                } else if (!empty($resp['profile_pic_url'])) {
+                    $img = (string)$resp['profile_pic_url'];
+                }
+
+                $data = [
+                    "username" => strval($resp['username'] ?? $username),
+                    "account_id" => strval($resp['pk'] ?? ($resp['id'] ?? '')),
+                    "follower" => intval($resp['follower_count'] ?? 0),
+                    "media_count" => intval($resp['media_count'] ?? 0),
+                    "img" => $img,
+                    "source" => "instagram_looter"
+                ];
+
+                return [
+                    "status" => true,
+                    "msg" => "Data ditemukan",
+                    "data" => $data
+                ];
+            }
+
+            return [
+                "status" => false,
+                "msg" => "Username <b>$username</b> tidak ditemukan",
+                "data" => []
+            ];
+        } else if ($type == "Tiktok") {
+            $username = str_replace('@', '', $username);
+
+            $resp1 = $this->getDataFromFirstEndpoint($username);
+            $resp1_ok = intval($resp1['code'] ?? -1) === 0 && !empty($resp1['data']['user']['uniqueId']);
+            $resp1_user = $resp1['data']['user'] ?? [];
+            $resp1_stats = $resp1['data']['stats'] ?? [];
+
+            $username_from_resp = strval($resp1_user['uniqueId'] ?? $username);
+            $avatar_urls = $resp1_user['avatarLarger'] ?? ($resp1_user['avatarMedium'] ?? ($resp1_user['avatarThumb'] ?? null));
+            $visible_videos_count = $resp1_stats['videoCount'] ?? null;
+            $follower_count = $resp1_stats['followerCount'] ?? null;
+            $account_id = strval($resp1_user['secUid'] ?? '');
+            
+            if ($resp1_ok) {
+                $data = [
+                    "username" => strval($username_from_resp ?: $username),
+                    "account_id" => $account_id,
+                    "follower" => intval($follower_count ?? 0),
+                    "media_count" => intval($visible_videos_count ?? 0),
+                    "img" => $avatar_urls,
+                    "source" => "first_endpoint"
+                ];
+
+                return [
+                    "status" => true,
+                    "msg" => "Data ditemukan",
+                    "data" => $data
+                ];
+            }
+
+            return [
+                "status" => false,
+                "msg" => "Username <b>$username</b> tidak ditemukan",
+                "data" => []
+            ];
+        } else if ($type == "Youtube") {
+            $api_key = $this->get_youtube_api_key();
+            if ($api_key === '') {
+                return [
+                    "status" => false,
+                    "msg" => "YOUTUBE_API_KEY belum diset",
+                    "data" => []
+                ];
+            }
+
+            $query_param = '';
+            $query_value = '';
+
+            if ($username === 'channel' && !empty($uri[2])) {
+                $query_param = 'id';
+                $query_value = $uri[2];
+            } else if ($username === 'user' && !empty($uri[2])) {
+                $query_param = 'forUsername';
+                $query_value = $uri[2];
+            } else if ($username === 'c' && !empty($uri[2])) {
+                $query_param = 'forHandle';
+                $query_value = '@' . ltrim($uri[2], '@');
+            } else {
+                $query_param = 'forHandle';
+                $query_value = '@' . ltrim($username, '@');
+            }
+
+            $api_url = 'https://www.googleapis.com/youtube/v3/channels?' . http_build_query([
+                'part' => 'snippet,statistics',
+                $query_param => $query_value,
+                'key' => $api_key,
+            ]);
+
+            $resp = $this->curlRequestWithRetry($api_url, [], function ($r) {
+                return empty($r['error']) && !empty($r['items'][0]['id']);
+            });
+
+            if (!empty($resp['error'])) {
+                return [
+                    "status" => false,
+                    "msg" => strval($resp['error']['message'] ?? 'Gagal mengambil data YouTube'),
+                    "data" => []
+                ];
+            }
+
+            $item = $resp['items'][0] ?? [];
+            if (empty($item)) {
+                return [
+                    "status" => false,
+                    "msg" => "Channel YouTube <b>$query_value</b> tidak ditemukan",
+                    "data" => []
+                ];
+            }
+
+            $snippet = $item['snippet'] ?? [];
+            $statistics = $item['statistics'] ?? [];
+            $thumbnails = $snippet['thumbnails'] ?? [];
+
+            $img = '';
+            foreach (['high', 'medium', 'default'] as $thumb_key) {
+                if (!empty($thumbnails[$thumb_key]['url'])) {
+                    $img = (string)$thumbnails[$thumb_key]['url'];
+                    break;
+                }
+            }
+
+            $username_from_resp = ltrim(strval($snippet['customUrl'] ?? $snippet['title'] ?? $username), '@');
+
+            $data = [
+                "username" => $username_from_resp,
+                "account_id" => strval($item['id'] ?? ''),
+                "follower" => intval($statistics['subscriberCount'] ?? 0),
+                "media_count" => intval($statistics['videoCount'] ?? 0),
+                "img" => $img,
+                "source" => "youtube_data_api"
+            ];
+
+            return [
+                "status" => true,
+                "msg" => "Data ditemukan",
+                "data" => $data
+            ];
+        } else if ($type == "Threads") {
+            $username = ltrim($username, '@');
+
+            $CI =& get_instance();
+            $influencer = null;
+            if (!empty($influencer_id)) {
+                $influencer = $CI->mymodel->selectDataOne('influencer', ['id' => $influencer_id]);
+            }
+            if (empty($influencer) && $username !== '') {
+                $influencer = $CI->mymodel->selectDataOne('influencer', ['username' => $username, 'type' => 'Threads']);
+            }
+
+            if (empty($influencer) || empty($influencer['threads_access_token'])) {
+                return [
+                    "status" => false,
+                    "msg" => "Threads belum terhubung untuk influencer ini. Silakan reconnect dulu.",
+                    "data" => []
+                ];
+            }
+
+            if (!empty($influencer['threads_token_expires_at']) && $influencer['threads_token_expires_at'] < date("Y-m-d H:i:s")) {
+                return [
+                    "status" => false,
+                    "msg" => "Token Threads sudah expired, silakan reconnect.",
+                    "data" => []
+                ];
+            }
+
+            $token = $influencer['threads_access_token'];
+
+            $profile_url = "https://graph.threads.net/v1.0/me?fields=id,username,name,threads_profile_picture_url&access_token=" . $token;
+            $profile_resp = $this->curlRequestWithRetry($profile_url, [], function ($r) {
+                return empty($r['error']) && !empty($r['id']);
+            });
+
+            if (!empty($profile_resp['error']) || empty($profile_resp['id'])) {
+                return [
+                    "status" => false,
+                    "msg" => strval($profile_resp['error']['message'] ?? 'Gagal mengambil profil Threads'),
+                    "data" => []
+                ];
+            }
+
+            $insights_url = "https://graph.threads.net/v1.0/me/threads_insights?metric=followers_count&access_token=" . $token;
+            $insights_resp = $this->curlRequestWithRetry($insights_url, [], function ($r) {
+                return empty($r['error']);
+            });
+
+            $follower_count = 0;
+            if (!empty($insights_resp['data'])) {
+                foreach ($insights_resp['data'] as $metric) {
+                    if (($metric['name'] ?? '') === 'followers_count') {
+                        $follower_count = intval($metric['total_value']['value'] ?? ($metric['values'][0]['value'] ?? 0));
+                        break;
+                    }
+                }
+            }
+
+            $data = [
+                "username" => strval($profile_resp['username'] ?? $username),
+                "account_id" => strval($profile_resp['id'] ?? ''),
+                "follower" => $follower_count,
+                "media_count" => 0,
+                "img" => strval($profile_resp['threads_profile_picture_url'] ?? ''),
+                "source" => "threads_graph_api"
+            ];
+
+            return [
+                "status" => true,
+                "msg" => "Data ditemukan",
+                "data" => $data
+            ];
+        } else {
+            return [
+                "status" => false,
+                "msg" => "Platform belum tersedia",
+                "data" => []
+            ];
+        }
+    }
+
+
+    function get_post_list($type, $account_id, $influencer_id = null)
+    {
+        $response = array();
+        $response["status"] = true;
+        $response["msg"] = "";
+        $response["data"] = array();
+
+        if (empty($account_id)) {
+            $response["status"] = false;
+            $response["msg"] = "Pastikan account id sudah diisi!";
+            $response["data"] = array();
+        } else if ($type == "Instagram") {
+            $api_url = "https://instagram-looter2.p.rapidapi.com/user-feeds2?id=" . urlencode($account_id) . "&count=10";
+            $headers = [
+                "Content-Type: application/json",
+                "x-rapidapi-host: instagram-looter2.p.rapidapi.com",
+                "x-rapidapi-key: " . $this->rapidapi_key()
+            ];
+
+            $resp = $this->curlRequestWithRetry($api_url, $headers, function ($r) {
+                return !empty($r['data']['user']['edge_owner_to_timeline_media']['edges']);
+            });
+
+            $edges = $resp['data']['user']['edge_owner_to_timeline_media']['edges'] ?? [];
+
+            if (!empty($edges)) {
+                $response["status"] = true;
+                $response["msg"] = "Data ditemukan";
+
+                $arr = array();
+                foreach (array_slice($edges, 0, 10) as $k => $edge) {
+                    $node = $edge['node'] ?? [];
+                    $shortcode = strval($node['shortcode'] ?? '');
+                    $is_video = !empty($node['is_video']);
+                    $typename = strval($node['__typename'] ?? '');
+                    $caption = '';
+                    if (!empty($node['edge_media_to_caption']['edges'][0]['node']['text'])) {
+                        $caption = (string)$node['edge_media_to_caption']['edges'][0]['node']['text'];
+                    }
+
+                    $media_type = 'photo';
+                    if ($is_video) {
+                        $media_type = 'video';
+                    } else if ($typename === 'GraphSidecar') {
+                        $media_type = 'sidecar';
+                    }
+
+                    $arr[$k]["like"] = intval($node['edge_media_preview_like']['count'] ?? 0);
+                    $arr[$k]["share"] = 0;
+                    $arr[$k]["comment"] = intval($node['edge_media_to_comment']['count'] ?? 0);
+                    $arr[$k]["collect"] = 0;
+                    $arr[$k]["view"] = intval($node['video_view_count'] ?? 0);
+                    $arr[$k]["content_id"] = strval($node['id'] ?? '');
+                    $arr[$k]["shortcode"] = $shortcode;
+                    $arr[$k]["title"] = $caption;
+                    $arr[$k]["cover"] = strval($node['thumbnail_src'] ?? ($node['display_url'] ?? ''));
+                    $arr[$k]["display_url"] = strval($node['display_url'] ?? '');
+                    $arr[$k]["video_url"] = strval($node['video_url'] ?? '');
+                    $arr[$k]["media_type"] = $media_type;
+                    $arr[$k]["create_time"] = intval($node['taken_at_timestamp'] ?? 0);
+                    $arr[$k]["url"] = $shortcode ? ("https://www.instagram.com/p/" . $shortcode . "/") : "";
+                }
+
+                $response["data"] = $arr;
+            } else {
+                $response["status"] = false;
+                $response["msg"] = "Data post instagram account id :  <b>" . $account_id . "</b> tidak ditemukan";
+                $response["data"] = array();
+            }
+        } else if ($type == "Tiktok") {
+            $normalized_unique_id = ltrim(trim((string)$account_id), '@');
+            $normalized_unique_id = '@' . $normalized_unique_id;
+
+            $url = "https://tiktok-video-no-watermark10.p.rapidapi.com/index/Tiktok/getUserVideos?unique_id=" . urlencode($normalized_unique_id) . "&count=10&cursor=0";
+            $headers = [
+                "Content-Type: application/json",
+                "x-rapidapi-host: tiktok-video-no-watermark10.p.rapidapi.com",
+                "x-rapidapi-key: " . $this->rapidapi_key()
+            ];
+
+            $response = $this->curlRequestWithRetry($url, $headers, function ($resp) {
+                return intval($resp['code'] ?? -1) === 0 && !empty($resp['data']['videos']);
+            });
+
+            $videos = $response['data']['videos'] ?? [];
+            $data_ok = intval($response['code'] ?? -1) === 0 && is_array($videos) && !empty($videos);
+
+            if ($data_ok) {
+                $response["status"] = true;
+                $response["msg"] = "Data ditemukan";
+
+                $arr = array();
+                foreach (array_slice($videos, 0, 10) as $k => $v) {
+                    $author = $v['author'] ?? [];
+                    $video_id = strval($v['video_id'] ?? $v['aweme_id'] ?? '');
+
+                    $arr[$k]["like"] = intval($v['digg_count'] ?? 0);
+                    $arr[$k]["share"] = intval($v['share_count'] ?? 0);
+                    $arr[$k]["comment"] = intval($v['comment_count'] ?? 0);
+                    $arr[$k]["collect"] = intval($v['collect_count'] ?? 0);
+                    $arr[$k]["view"] = intval($v['play_count'] ?? 0);
+                    $arr[$k]["video_id"] = $video_id;
+                    $arr[$k]["aweme_id"] = strval($v['aweme_id'] ?? $video_id);
+                    $arr[$k]["title"] = strval($v['title'] ?? '');
+                    $arr[$k]["cover"] = strval($v['cover'] ?? '');
+                    $arr[$k]["duration"] = intval($v['duration'] ?? 0);
+                    $arr[$k]["play"] = strval($v['play'] ?? '');
+                    $arr[$k]["wmplay"] = strval($v['wmplay'] ?? '');
+                    $arr[$k]["music"] = strval($v['music'] ?? '');
+                    $arr[$k]["create_time"] = intval($v['create_time'] ?? 0);
+                    $arr[$k]["is_ad"] = !empty($v['is_ad']);
+                    $arr[$k]["author_id"] = strval($author['id'] ?? '');
+                    $arr[$k]["author_unique_id"] = strval($author['unique_id'] ?? '');
+                    $arr[$k]["author_nickname"] = strval($author['nickname'] ?? '');
+                    $arr[$k]["author_avatar"] = strval($author['avatar'] ?? '');
+                    $arr[$k]["url"] = (!empty($author['unique_id']) && !empty($video_id))
+                        ? "https://www.tiktok.com/@" . $author['unique_id'] . "/video/" . $video_id
+                        : "";
+                }
+
+                $response["data"] = $arr;
+            } else {
+                $response["status"] = false;
+                $response["msg"] = "Data video tiktok account id :  <b>" . $account_id . "</b> tidak ditemukan";
+                $response["data"] = array();
+            }
+
+        } else if ($type == "Youtube") {
+            $api_key = $this->get_youtube_api_key();
+            if ($api_key === '') {
+                $response["status"] = false;
+                $response["msg"] = "YOUTUBE_API_KEY belum diset";
+                $response["data"] = array();
+                return $response;
+            }
+
+            if (strpos($account_id, 'UC') !== 0) {
+                $response["status"] = false;
+                $response["msg"] = "Format channel ID YouTube tidak valid: <b>" . $account_id . "</b>";
+                $response["data"] = array();
+                return $response;
+            }
+
+            $uploads_playlist_id = 'UU' . substr($account_id, 2);
+
+            $playlist_url = 'https://www.googleapis.com/youtube/v3/playlistItems?' . http_build_query([
+                'part' => 'snippet,contentDetails',
+                'playlistId' => $uploads_playlist_id,
+                'maxResults' => 10,
+                'key' => $api_key,
+            ]);
+
+            $playlist_resp = $this->curlRequestWithRetry($playlist_url, [], function ($r) {
+                return empty($r['error']) && isset($r['items']);
+            });
+
+            if (!empty($playlist_resp['error'])) {
+                $response["status"] = false;
+                $response["msg"] = strval($playlist_resp['error']['message'] ?? 'Gagal mengambil daftar video YouTube');
+                $response["data"] = array();
+                return $response;
+            }
+
+            $playlist_items = $playlist_resp['items'] ?? [];
+            $video_ids = array();
+            foreach ($playlist_items as $it) {
+                $vid = $it['contentDetails']['videoId'] ?? '';
+                if ($vid !== '') {
+                    $video_ids[] = $vid;
+                }
+            }
+
+            if (empty($video_ids)) {
+                $response["status"] = false;
+                $response["msg"] = "Tidak ada video di channel YouTube account id : <b>" . $account_id . "</b>";
+                $response["data"] = array();
+                return $response;
+            }
+
+            $videos_url = 'https://www.googleapis.com/youtube/v3/videos?' . http_build_query([
+                'part' => 'snippet,statistics,contentDetails',
+                'id' => implode(',', $video_ids),
+                'key' => $api_key,
+            ]);
+
+            $videos_resp = $this->curlRequestWithRetry($videos_url, [], function ($r) {
+                return empty($r['error']) && !empty($r['items']);
+            });
+
+            if (!empty($videos_resp['error'])) {
+                $response["status"] = false;
+                $response["msg"] = strval($videos_resp['error']['message'] ?? 'Gagal mengambil detail video YouTube');
+                $response["data"] = array();
+                return $response;
+            }
+
+            $videos_items = $videos_resp['items'] ?? [];
+            if (empty($videos_items)) {
+                $response["status"] = false;
+                $response["msg"] = "Detail video YouTube tidak ditemukan untuk account id : <b>" . $account_id . "</b>";
+                $response["data"] = array();
+                return $response;
+            }
+
+            $response["status"] = true;
+            $response["msg"] = "Data ditemukan";
+
+            $arr = array();
+            foreach (array_slice($videos_items, 0, 10) as $k => $v) {
+                $snippet = $v['snippet'] ?? [];
+                $statistics = $v['statistics'] ?? [];
+                $content_details = $v['contentDetails'] ?? [];
+                $thumbnails = $snippet['thumbnails'] ?? [];
+                $video_id = strval($v['id'] ?? '');
+
+                $cover = '';
+                foreach (['maxres', 'standard', 'high', 'medium', 'default'] as $thumb_key) {
+                    if (!empty($thumbnails[$thumb_key]['url'])) {
+                        $cover = (string)$thumbnails[$thumb_key]['url'];
+                        break;
+                    }
+                }
+
+                $duration_seconds = $this->parse_youtube_duration_seconds(strval($content_details['duration'] ?? ''));
+                $media_type = ($duration_seconds > 0 && $duration_seconds <= 60) ? 'shorts' : 'video';
+                $url = ($media_type === 'shorts')
+                    ? "https://www.youtube.com/shorts/" . $video_id
+                    : "https://www.youtube.com/watch?v=" . $video_id;
+
+                $arr[$k]["like"] = intval($statistics['likeCount'] ?? 0);
+                $arr[$k]["share"] = 0;
+                $arr[$k]["comment"] = intval($statistics['commentCount'] ?? 0);
+                $arr[$k]["collect"] = 0;
+                $arr[$k]["view"] = intval($statistics['viewCount'] ?? 0);
+                $arr[$k]["content_id"] = $video_id;
+                $arr[$k]["video_id"] = $video_id;
+                $arr[$k]["title"] = strval($snippet['title'] ?? '');
+                $arr[$k]["cover"] = $cover;
+                $arr[$k]["duration"] = $duration_seconds;
+                $arr[$k]["media_type"] = $media_type;
+                $arr[$k]["create_time"] = !empty($snippet['publishedAt']) ? intval(strtotime($snippet['publishedAt'])) : 0;
+                $arr[$k]["channel_id"] = strval($snippet['channelId'] ?? $account_id);
+                $arr[$k]["channel_title"] = strval($snippet['channelTitle'] ?? '');
+                $arr[$k]["url"] = $url;
+            }
+
+            $response["data"] = $arr;
+        } else if ($type == "Threads") {
+            $CI =& get_instance();
+            $influencer = null;
+            if (!empty($influencer_id)) {
+                $influencer = $CI->mymodel->selectDataOne('influencer', ['id' => $influencer_id]);
+            }
+            if (empty($influencer) && !empty($account_id)) {
+                $influencer = $CI->mymodel->selectDataOne('influencer', ['account_id' => $account_id, 'type' => 'Threads']);
+            }
+
+            if (empty($influencer) || empty($influencer['threads_access_token'])) {
+                $response["status"] = false;
+                $response["msg"] = "Threads belum terhubung untuk influencer ini";
+                $response["data"] = array();
+                return $response;
+            }
+
+            if (!empty($influencer['threads_token_expires_at']) && $influencer['threads_token_expires_at'] < date("Y-m-d H:i:s")) {
+                $response["status"] = false;
+                $response["msg"] = "Token Threads sudah expired, silakan reconnect";
+                $response["data"] = array();
+                return $response;
+            }
+
+            $token = $influencer['threads_access_token'];
+
+            $threads_url = "https://graph.threads.net/v1.0/me/threads?fields=id,permalink,timestamp,text,media_type,media_url,thumbnail_url&limit=10&access_token=" . $token;
+            $threads_resp = $this->curlRequestWithRetry($threads_url, [], function ($r) {
+                return empty($r['error']) && isset($r['data']);
+            });
+
+            if (!empty($threads_resp['error'])) {
+                $response["status"] = false;
+                $response["msg"] = strval($threads_resp['error']['message'] ?? 'Gagal mengambil daftar Threads');
+                $response["data"] = array();
+                return $response;
+            }
+
+            $threads = $threads_resp['data'] ?? [];
+            if (empty($threads)) {
+                $response["status"] = false;
+                $response["msg"] = "Tidak ada thread di akun Threads ini";
+                $response["data"] = array();
+                return $response;
+            }
+
+            $response["status"] = true;
+            $response["msg"] = "Data ditemukan";
+
+            $arr = array();
+            foreach (array_slice($threads, 0, 10) as $k => $t) {
+                $thread_id = strval($t['id'] ?? '');
+
+                $metrics = ['views' => 0, 'likes' => 0, 'replies' => 0, 'reposts' => 0, 'quotes' => 0];
+                if ($thread_id !== '') {
+                    $insights_url = "https://graph.threads.net/v1.0/" . $thread_id . "/insights?metric=views,likes,replies,reposts,quotes&access_token=" . $token;
+                    $insights_resp = $this->curlRequestWithRetry($insights_url, [], function ($r) {
+                        return empty($r['error']);
+                    });
+
+                    if (!empty($insights_resp['data'])) {
+                        foreach ($insights_resp['data'] as $m) {
+                            $name = $m['name'] ?? '';
+                            if (isset($metrics[$name])) {
+                                $metrics[$name] = intval($m['values'][0]['value'] ?? ($m['total_value']['value'] ?? 0));
+                            }
+                        }
+                    }
+                }
+
+                $arr[$k]["like"] = $metrics['likes'];
+                $arr[$k]["share"] = $metrics['reposts'];
+                $arr[$k]["comment"] = $metrics['replies'];
+                $arr[$k]["collect"] = $metrics['quotes'];
+                $arr[$k]["view"] = $metrics['views'];
+                $arr[$k]["content_id"] = $thread_id;
+                $arr[$k]["title"] = strval($t['text'] ?? '');
+                $arr[$k]["cover"] = strval($t['thumbnail_url'] ?? ($t['media_url'] ?? ''));
+                $arr[$k]["media_type"] = strtolower(strval($t['media_type'] ?? 'text'));
+                $arr[$k]["create_time"] = !empty($t['timestamp']) ? intval(strtotime($t['timestamp'])) : 0;
+                $arr[$k]["url"] = strval($t['permalink'] ?? '');
+            }
+
+            $response["data"] = $arr;
+        } else {
+            $response["status"] = false;
+            $response["msg"] = "Platform belum tersedia";
+            $response["data"] = array();
+        }
+        return $response;
+    }
+
+    function parse_youtube_duration_seconds($iso_duration)
+    {
+        $iso_duration = trim((string)$iso_duration);
+        if ($iso_duration === '' || strpos($iso_duration, 'PT') !== 0) {
+            return 0;
+        }
+
+        $hours = 0;
+        $minutes = 0;
+        $seconds = 0;
+
+        if (preg_match('/(\d+)H/', $iso_duration, $m)) {
+            $hours = intval($m[1]);
+        }
+        if (preg_match('/(\d+)M/', $iso_duration, $m)) {
+            $minutes = intval($m[1]);
+        }
+        if (preg_match('/(\d+)S/', $iso_duration, $m)) {
+            $seconds = intval($m[1]);
+        }
+
+        return $hours * 3600 + $minutes * 60 + $seconds;
+    }
+
+    function extract_tiktok_content_id($url)
+    {
+        if (!$url) {
+            return '';
+        }
+
+        if (preg_match('/\\/video\\/(\\d+)/', $url, $matches)) {
+            return $matches[1];
+        }
+        if (preg_match('/\\/photo\\/(\\d+)/', $url, $matches)) {
+            return $matches[1];
+        }
+        if (preg_match('/(\\d{10,25})/', $url, $matches)) {
+            return $matches[1];
+        }
+
+        return '';
+    }
+
+    function detect_tiktok_media_type_from_url($url)
+    {
+        if (!$url) {
+            return '';
+        }
+
+        if (strpos($url, '/photo/') !== false) {
+            return 'photo';
+        }
+
+        if (strpos($url, '/video/') !== false) {
+            return 'video';
+        }
+
+        return '';
+    }
+
+    function extract_tiktok_cover_from_item($item)
+    {
+        if (!is_array($item)) {
+            return '';
+        }
+
+        if (!empty($item['video']['cover'])) {
+            return (string)$item['video']['cover'];
+        }
+        if (!empty($item['imagePost']['cover']['imageURL']['urlList'][0])) {
+            return (string)$item['imagePost']['cover']['imageURL']['urlList'][0];
+        }
+        if (!empty($item['video']['originCover'])) {
+            return (string)$item['video']['originCover'];
+        }
+
+        return '';
+    }
+
+    function get_youtube_api_key()
+    {
+        $key = getenv('YOUTUBE_API_KEY');
+        if (!$key && isset($_ENV['YOUTUBE_API_KEY'])) {
+            $key = $_ENV['YOUTUBE_API_KEY'];
+        }
+        if (!$key && isset($_SERVER['YOUTUBE_API_KEY'])) {
+            $key = $_SERVER['YOUTUBE_API_KEY'];
+        }
+        if (!$key && function_exists('config_item')) {
+            $key = config_item('youtube_api_key');
+        }
+
+        return trim((string)$key);
+    }
+
+    function extract_youtube_video_id($url)
+    {
+        $url = trim((string)$url);
+        if ($url === '') {
+            return '';
+        }
+
+        $parts = parse_url($url);
+        $host = strtolower((string)($parts['host'] ?? ''));
+        $path = trim((string)($parts['path'] ?? ''), '/');
+
+        if ($host === 'youtu.be') {
+            $segments = explode('/', $path);
+            return preg_match('/^[A-Za-z0-9_-]{11}$/', (string)($segments[0] ?? '')) ? $segments[0] : '';
+        }
+
+        parse_str((string)($parts['query'] ?? ''), $query);
+        $video_id = trim((string)($query['v'] ?? ''));
+        if (preg_match('/^[A-Za-z0-9_-]{11}$/', $video_id)) {
+            return $video_id;
+        }
+
+        $segments = explode('/', $path);
+        $markers = ['shorts', 'embed', 'live', 'v'];
+        foreach ($markers as $marker) {
+            $index = array_search($marker, $segments, true);
+            if ($index !== false) {
+                $candidate = (string)($segments[$index + 1] ?? '');
+                if (preg_match('/^[A-Za-z0-9_-]{11}$/', $candidate)) {
+                    return $candidate;
+                }
+            }
+        }
+
+        if (preg_match('~(?:v=|/)([A-Za-z0-9_-]{11})(?:[?&/]|$)~', $url, $matches)) {
+            return $matches[1];
+        }
+
+        return '';
+    }
+
+    function get_youtube_media_type_from_url($url)
+    {
+        $url = trim((string)$url);
+        if ($url === '') {
+            return '';
+        }
+
+        if (stripos($url, '/shorts/') !== false) {
+            return 'shorts';
+        }
+
+        return 'video';
+    }
+
+    function get_youtube_video_metrics_from_public_api($url)
+    {
+        $video_id = $this->extract_youtube_video_id($url);
+        if ($video_id === '') {
+            return [
+                'status' => false,
+                'msg' => 'Format URL YouTube tidak valid',
+                'data' => []
+            ];
+        }
+
+        $api_key = $this->get_youtube_api_key();
+        if ($api_key === '') {
+            return [
+                'status' => false,
+                'msg' => 'YOUTUBE_API_KEY belum diset',
+                'data' => []
+            ];
+        }
+
+        $api_url = 'https://www.googleapis.com/youtube/v3/videos?' . http_build_query([
+            'part' => 'snippet,statistics',
+            'id' => $video_id,
+            'key' => $api_key,
+        ]);
+
+        $resp = $this->curlRequestWithRetry($api_url, [], function ($r) {
+            return empty($r['error']) && !empty($r['items'][0]['id']);
+        });
+
+        if (!empty($resp['error'])) {
+            return [
+                'status' => false,
+                'msg' => strval($resp['error']['message'] ?? 'Gagal mengambil data YouTube'),
+                'data' => []
+            ];
+        }
+
+        $item = $resp['items'][0] ?? [];
+        if (empty($item)) {
+            return [
+                'status' => false,
+                'msg' => 'Video YouTube tidak ditemukan',
+                'data' => []
+            ];
+        }
+
+        $snippet = $item['snippet'] ?? [];
+        $statistics = $item['statistics'] ?? [];
+        $thumbnails = $snippet['thumbnails'] ?? [];
+
+        $cover = '';
+        foreach (['maxres', 'standard', 'high', 'medium', 'default'] as $thumb_key) {
+            if (!empty($thumbnails[$thumb_key]['url'])) {
+                $cover = (string)$thumbnails[$thumb_key]['url'];
+                break;
+            }
+        }
+
+        return [
+            'status' => true,
+            'msg' => 'Data ditemukan',
+            'data' => [
+                'content_id' => strval($item['id'] ?? $video_id),
+                'media_type' => $this->get_youtube_media_type_from_url($url),
+                'view' => intval($statistics['viewCount'] ?? 0),
+                'like' => intval($statistics['likeCount'] ?? 0),
+                'comment' => intval($statistics['commentCount'] ?? 0),
+                'share' => 0,
+                'collect' => 0,
+                'created_at' => !empty($snippet['publishedAt']) ? date('Y-m-d', strtotime($snippet['publishedAt'])) : '',
+                'cover' => $cover,
+                'video_link' => $url,
+                'images' => [],
+            ]
+        ];
+    }
+
+    function get_social_media($type, $url, $fetch_media_assets = true, $influencer_id = null)
+    {
+        $response = array();
+        $response["status"] = true;
+        $response["msg"] = "";
+        $response["data"] = array(
+            "like" => 0,
+            "share" => 0,
+            "comment" => 0,
+            "collect" => 0,
+            "view" => 0,
+            "created_at" => "",
+            "content_id" => "",
+            "media_type" => "",
+            "video_link" => "",
+            "cover" => "",
+            "images" => array(),
+        );
+        if ($type == "Tiktok") {
+            if ($url) {
+                $video_id = $this->extract_tiktok_content_id($url);
+                $response["data"]["content_id"] = $video_id;
+                $response["data"]["media_type"] = $this->detect_tiktok_media_type_from_url($url);
+
+                if (empty($video_id)) {
+                    $response["status"] = false;
+                    $response["msg"] = "Response tiktok " . $url . " tidak ditemukan";
+                    return $response;
+                }
+
+                $item = null;
+                $curl = curl_init();
+                curl_setopt_array($curl, array(
+                    CURLOPT_URL => $url,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_ENCODING => '',
+                    CURLOPT_MAXREDIRS => 10,
+                    CURLOPT_TIMEOUT => 0,
+                    CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0',
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                    CURLOPT_CUSTOMREQUEST => 'GET',
+                    CURLOPT_HTTPHEADER => array(
+                        'Cookie: tt_chain_token=+O8Mw9RH4nKrX/ACdOBhXw==; tt_csrf_token=27TtpaB8-Wftkj0rFR_w6LdtcAp4tdDCFfBY; ttwid=1%7CdJI7LAdiTNKwSISqHad9wDTJ6G_70WU_PGro2isx-ac%7C1705385087%7C518efef116162148489d7f25fa3c7b06633a23c824590f04ea0226d5c2b6f092'
+                    ),
+                ));
+
+                $responsee = curl_exec($curl);
+                curl_close($curl);
+
+                if (!empty($responsee)) {
+                    $pattern = '/<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__" type="application\\/json">(.*?)<\\/script>/s';
+                    preg_match($pattern, $responsee, $matches);
+                    if (isset($matches[1])) {
+                        $jsonContent = $matches[1];
+                        $json = json_decode($jsonContent, true);
+                        if (is_array($json)) {
+                            $item = $json['__DEFAULT_SCOPE__']['webapp.video-detail']['itemInfo']['itemStruct'] ?? null;
+                        }
+                    }
+                }
+
+                // Cek apakah $item punya stats yang valid (tidak semua 0)
+                $has_valid_stats = !empty($item) && !empty($item['stats']) &&
+                    (intval($item['stats']['diggCount'] ?? 0) > 0 ||
+                     intval($item['stats']['shareCount'] ?? 0) > 0 ||
+                     intval($item['stats']['commentCount'] ?? 0) > 0 ||
+                     intval($item['stats']['collectCount'] ?? 0) > 0 ||
+                     intval($item['stats']['playCount'] ?? 0) > 0);
+
+                if ($has_valid_stats) {
+                    $response["data"]["like"] = intval($item['stats']['diggCount'] ?? 0);
+                    $response["data"]["share"] = intval($item['stats']['shareCount'] ?? 0);
+                    $response["data"]["comment"] = intval($item['stats']['commentCount'] ?? 0);
+                    $response["data"]["collect"] = intval($item['stats']['collectCount'] ?? 0);
+                    $response["data"]["view"] = intval($item['stats']['playCount'] ?? 0);
+                    if (intval($item['createTime'] ?? 0) > 0) {
+                        $response["data"]["created_at"] = date("Y-m-d", intval($item['createTime']));
+                    }
+                    if (!empty($item['id'])) {
+                        $response["data"]["content_id"] = (string)$item['id'];
+                    }
+
+                    if (!empty($item['imagePost']['images']) || !empty($item['imagePost']['cover'])) {
+                        $response["data"]["media_type"] = "photo";
+                    } else {
+                        $response["data"]["media_type"] = "video";
+                    }
+                    $response["data"]["cover"] = $this->extract_tiktok_cover_from_item($item);
+
+                    if ($fetch_media_assets && $response["data"]["media_type"] === "photo") {
+                        $photo_urls = array();
+                        foreach (($item['imagePost']['images'] ?? array()) as $img) {
+                            if (!empty($img['imageURL']['urlList'][0])) {
+                                $photo_urls[] = (string)$img['imageURL']['urlList'][0];
+                            }
+                        }
+                        if (count($photo_urls) > 0) {
+                            $response["data"]["images"] = $photo_urls;
+                            $response["data"]["video_link"] = json_encode($photo_urls);
+                        } else if ($response["data"]["cover"] !== "") {
+                            $response["data"]["video_link"] = json_encode(array($response["data"]["cover"]));
+                        }
+                    }
+                } else {
+                    $detail_url = "https://tiktok-video-no-watermark10.p.rapidapi.com/index/Tiktok/getVideoInfo?url=" . urlencode($url) . "&hd=0";
+                    $headers = [
+                        "Content-Type: application/json",
+                        "x-rapidapi-host: tiktok-video-no-watermark10.p.rapidapi.com",
+                        "x-rapidapi-key: " . $this->rapidapi_key()
+                    ];
+
+                    $responsee = $this->curlRequestWithRetry($detail_url, $headers, function ($resp) {
+                        return intval($resp['code'] ?? -1) === 0 && !empty($resp['data']['id']);
+                    });
+
+                    $resp_ok = intval($responsee['code'] ?? -1) === 0;
+                    $fallback = $responsee['data'] ?? null;
+
+                    if ($resp_ok && !empty($fallback)) {
+                        $response["data"]["like"] = intval($fallback['digg_count'] ?? 0);
+                        $response["data"]["share"] = intval($fallback['share_count'] ?? 0);
+                        $response["data"]["comment"] = intval($fallback['comment_count'] ?? 0);
+                        $response["data"]["collect"] = intval($fallback['collect_count'] ?? 0);
+                        $response["data"]["view"] = intval($fallback['play_count'] ?? 0);
+                        if (intval($fallback['create_time'] ?? 0) > 0) {
+                            $response["data"]["created_at"] = date("Y-m-d", intval($fallback['create_time']));
+                        }
+                        if (!empty($fallback['id'])) {
+                            $response["data"]["content_id"] = (string)$fallback['id'];
+                        }
+                        $response["data"]["cover"] = strval($fallback['cover'] ?? ($fallback['origin_cover'] ?? ($fallback['ai_dynamic_cover'] ?? '')));
+
+                        if (!empty($fallback['images']) || $response["data"]["media_type"] === "photo") {
+                            $response["data"]["media_type"] = "photo";
+                        } else {
+                            $response["data"]["media_type"] = "video";
+                        }
+
+                        if ($fetch_media_assets) {
+                            if ($response["data"]["media_type"] === "photo" && !empty($fallback['images']) && is_array($fallback['images'])) {
+                                $response["data"]["images"] = array_values(array_filter($fallback['images'], function ($img) {
+                                    return is_string($img) && $img !== '';
+                                }));
+                                if (count($response["data"]["images"]) > 0) {
+                                    $response["data"]["video_link"] = json_encode($response["data"]["images"]);
+                                } else if ($response["data"]["cover"] !== "") {
+                                    $response["data"]["video_link"] = json_encode(array($response["data"]["cover"]));
+                                }
+                            } else if ($response["data"]["media_type"] !== "photo" && !empty($fallback['play'])) {
+                                $response["data"]["video_link"] = (string)$fallback['play'];
+                            }
+                        }
+                    } else {
+                        $response["status"] = false;
+                        $response["msg"] = "Response tiktok " . $video_id . " tidak ditemukan";
+                    }
+                }
+
+            } else {
+                $response["status"] = false;
+                $response["msg"] = "URL tidak ditemukan";
+            }
+        } else if ($type == "Instagram") {
+            if (!$url) {
+                $response["status"] = false;
+                $response["msg"] = "URL tidak ditemukan";
+                return $response;
+            }
+
+            $api_url = "https://instagram-looter2.p.rapidapi.com/post?url=" . urlencode($url);
+            $headers = [
+                "Content-Type: application/json",
+                "x-rapidapi-host: instagram-looter2.p.rapidapi.com",
+                "x-rapidapi-key: " . $this->rapidapi_key()
+            ];
+
+            $resp = $this->curlRequestWithRetry($api_url, $headers, function ($r) {
+                return !empty($r['status']) && $r['status'] === true && !empty($r['id']);
+            });
+
+            $resp_ok = !empty($resp['status']) && $resp['status'] === true && !empty($resp['id']);
+
+            if (!$resp_ok) {
+                $response["status"] = false;
+                $response["msg"] = "Response instagram tidak ditemukan";
+                $response["data"] = array();
+                return $response;
+            }
+
+            $is_video = !empty($resp['is_video']);
+            $typename = strval($resp['__typename'] ?? '');
+
+            $media_type = 'photo';
+            if ($is_video) {
+                $media_type = 'video';
+            } else if ($typename === 'GraphSidecar') {
+                $media_type = 'sidecar';
+            }
+
+            $comment_count = intval(
+                $resp['edge_media_to_parent_comment']['count']
+                    ?? ($resp['edge_media_preview_comment']['count']
+                        ?? ($resp['edge_media_to_comment']['count'] ?? 0))
+            );
+            $view_count = intval($resp['video_play_count'] ?? ($resp['video_view_count'] ?? 0));
+
+            $response["status"] = true;
+            $response["msg"] = "";
+            $response["data"]["like"] = intval($resp['edge_media_preview_like']['count'] ?? 0);
+            $response["data"]["share"] = 0;
+            $response["data"]["comment"] = $comment_count;
+            $response["data"]["collect"] = 0;
+            $response["data"]["view"] = $view_count;
+            $response["data"]["content_id"] = strval($resp['id'] ?? ($resp['shortcode'] ?? ''));
+            $response["data"]["media_type"] = $media_type;
+            $response["data"]["cover"] = strval($resp['thumbnail_src'] ?? ($resp['display_url'] ?? ''));
+
+            if (intval($resp['taken_at_timestamp'] ?? 0) > 0) {
+                $response["data"]["created_at"] = date("Y-m-d", intval($resp['taken_at_timestamp']));
+            }
+
+            if ($fetch_media_assets) {
+                if ($media_type === 'video') {
+                    $response["data"]["video_link"] = strval($resp['video_url'] ?? '');
+                } else if ($media_type === 'sidecar') {
+                    $images = array();
+                    foreach (($resp['edge_sidecar_to_children']['edges'] ?? array()) as $child) {
+                        $cn = $child['node'] ?? array();
+                        if (!empty($cn['is_video']) && !empty($cn['video_url'])) {
+                            $images[] = (string)$cn['video_url'];
+                        } else if (!empty($cn['display_url'])) {
+                            $images[] = (string)$cn['display_url'];
+                        }
+                    }
+                    if (empty($images) && !empty($resp['display_url'])) {
+                        $images[] = (string)$resp['display_url'];
+                    }
+                    $response["data"]["images"] = $images;
+                    if (count($images) > 0) {
+                        $response["data"]["video_link"] = json_encode($images);
+                    } else if ($response["data"]["cover"] !== "") {
+                        $response["data"]["video_link"] = json_encode(array($response["data"]["cover"]));
+                    }
+                } else {
+                    $img = strval($resp['display_url'] ?? '');
+                    if ($img !== '') {
+                        $response["data"]["images"] = array($img);
+                        $response["data"]["video_link"] = json_encode(array($img));
+                    } else if ($response["data"]["cover"] !== "") {
+                        $response["data"]["video_link"] = json_encode(array($response["data"]["cover"]));
+                    }
+                }
+            }
+        } else if ($type == "Threads") {
+            if ($url) {
+                if (empty($influencer_id)) {
+                    $response["status"] = false;
+                    $response["msg"] = "influencer_id diperlukan untuk mengambil data Threads";
+                    return $response;
+                }
+
+                $metrics = $this->get_threads_metrics_from_official_api($url, $influencer_id);
+
+                if (!empty($metrics['error'])) {
+                    $response["status"] = false;
+                    $response["msg"] = $metrics['error'];
+                } else {
+                    $response["data"]["content_id"] = $metrics['thread_id'] ?? '';
+                    $response["data"]["view"] = intval($metrics['views'] ?? 0);
+                    $response["data"]["like"] = intval($metrics['likes'] ?? 0);
+                    $response["data"]["comment"] = intval($metrics['replies'] ?? 0);
+                    $response["data"]["share"] = intval($metrics['reposts'] ?? 0);
+                    $response["data"]["collect"] = intval($metrics['quotes'] ?? 0);
+                    $response["data"]["created_at"] = $metrics['created_at'] ?? '';
+                }
+            } else {
+                $response["status"] = false;
+                $response["msg"] = "URL tidak ditemukan";
+            }
+        } else if ($type == "Youtube") {
+            if ($url) {
+                $youtube = $this->get_youtube_video_metrics_from_public_api($url);
+                if (!$youtube['status']) {
+                    $response["status"] = false;
+                    $response["msg"] = $youtube['msg'];
+                    $response["data"] = array();
+                } else {
+                    $response["data"] = array_merge($response["data"], $youtube['data']);
+                }
+            } else {
+                $response["status"] = false;
+                $response["msg"] = "URL tidak ditemukan";
+            }
+        } else {
+            $response["status"] = false;
+            $response["msg"] = "Platform belum tersedia";
+            $response["data"] = array();
+        }
+        return $response;
+    }
+
+    function decode_threads_shortcode($shortcode)
+    {
+        $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+        $id = '0';
+        for ($i = 0; $i < strlen($shortcode); $i++) {
+            $char = $shortcode[$i];
+            $pos = strpos($alphabet, $char);
+            if ($pos === false) {
+                return '';
+            }
+            $id = bcadd(bcmul($id, '64'), strval($pos));
+        }
+        return $id;
+    }
+
+    function decode_threads_shortcode_from_url($url)
+    {
+        if (!$url) {
+            return '';
+        }
+
+        // Format: https://www.threads.com/@username/post/SHORTCODE
+        if (preg_match('/threads\\.com\\/@[^\\/]+\\/post\\/([A-Za-z0-9_-]+)/', $url, $matches)) {
+            return $this->decode_threads_shortcode($matches[1]);
+        }
+
+        // Format: https://www.threads.net/@username/post/SHORTCODE
+        if (preg_match('/threads\\.net\\/@[^\\/]+\\/post\\/([A-Za-z0-9_-]+)/', $url, $matches)) {
+            return $this->decode_threads_shortcode($matches[1]);
+        }
+
+        return '';
+    }
+
+    function get_threads_metrics_from_official_api($link_upload, $influencer_id)
+    {
+        $CI =& get_instance();
+        $influencer = $CI->mymodel->selectDataOne('influencer', ['id' => $influencer_id]);
+
+        if (empty($influencer['threads_access_token'])) {
+            return ['error' => 'Threads belum terhubung untuk influencer ini'];
+        }
+
+        if (!empty($influencer['threads_token_expires_at']) && $influencer['threads_token_expires_at'] < date("Y-m-d H:i:s")) {
+            return ['error' => 'Token Threads sudah expired, silakan reconnect'];
+        }
+
+        $token = $influencer['threads_access_token'];
+
+        // Extract shortcode dari URL
+        if (!preg_match('#threads\.(?:com|net)/@[^/]+/post/([A-Za-z0-9_-]+)#', $link_upload, $m)) {
+            return ['error' => 'Format URL Threads tidak valid: ' . $link_upload];
+        }
+        $shortcode = $m[1];
+
+        // Resolve shortcode → media ID via /me/threads
+        $media_id = $this->resolve_threads_media_id_by_shortcode($shortcode, $token);
+        if (empty($media_id)) {
+            return ['error' => 'Post Threads tidak ditemukan di akun ini (shortcode: ' . $shortcode . ')'];
+        }
+
+        // Hit Official Threads API: GET /{media_id}/insights
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => "https://graph.threads.net/v1.0/" . $media_id . "/insights?metric=views,likes,replies,reposts,quotes&access_token=" . $token,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 10,
+        ]);
+        $raw = curl_exec($curl);
+        curl_close($curl);
+
+        $data = json_decode($raw, true);
+
+        if (empty($data['data'])) {
+            return ['error' => 'Gagal mengambil insights dari Threads API'];
+        }
+
+        $result = ['thread_id' => $media_id];
+        foreach ($data['data'] as $metric) {
+            $name = $metric['name'] ?? '';
+            $value = intval($metric['values'][0]['value'] ?? 0);
+            $result[$name] = $value;
+        }
+
+        $media_detail = $this->get_threads_media_detail($media_id, $token);
+        if (!empty($media_detail['timestamp'])) {
+            $timestamp = strtotime($media_detail['timestamp']);
+            if ($timestamp !== false) {
+                $result['created_at'] = date("Y-m-d", $timestamp);
+            }
+        }
+
+        return $result;
+    }
+
+    function get_threads_media_detail($media_id, $token)
+    {
+        if (empty($media_id) || empty($token)) {
+            return array();
+        }
+
+        $fields = 'id,media_product_type,media_type,media_url,permalink,owner,username,text,timestamp,shortcode,thumbnail_url,children,is_quote_post';
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => "https://graph.threads.net/v1.0/" . $media_id . "?fields=" . urlencode($fields) . "&access_token=" . $token,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 10,
+        ]);
+        $raw = curl_exec($curl);
+        curl_close($curl);
+
+        $data = json_decode($raw, true);
+        return is_array($data) ? $data : array();
+    }
+
+    function get_threads_views_from_official_api($link_upload, $influencer_id)
+    {
+        $metrics = $this->get_threads_metrics_from_official_api($link_upload, $influencer_id);
+        return intval($metrics['views'] ?? 0);
+    }
+
+    function resolve_threads_media_id_by_shortcode($shortcode, $token)
+    {
+        $after = '';
+        for ($page = 0; $page < 5; $page++) {
+            $url = "https://graph.threads.net/v1.0/me/threads?fields=id,shortcode&limit=100&access_token=" . $token;
+            if (!empty($after)) {
+                $url .= "&after=" . $after;
+            }
+
+            $curl = curl_init();
+            curl_setopt_array($curl, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT => 10,
+            ]);
+            $response = curl_exec($curl);
+            curl_close($curl);
+
+            $data = json_decode($response, true);
+            if (empty($data['data'])) break;
+
+            foreach ($data['data'] as $post) {
+                if (($post['shortcode'] ?? '') === $shortcode) {
+                    return $post['id'];
+                }
+            }
+
+            $after = $data['paging']['cursors']['after'] ?? '';
+            if (empty($after)) break;
+        }
+
+        return '';
+    }
+
+    function curlRequestWithRetry($url, $headers, $isValidResponse, $maxRetry = 3, $delayMs = 300)
+    {
+        $lastResponse = null;
+
+        for ($attempt = 1; $attempt <= $maxRetry; $attempt++) {
+            $lastResponse = $this->curlRequest($url, $headers);
+            if (is_callable($isValidResponse) && $isValidResponse($lastResponse)) {
+                return $lastResponse;
+            }
+
+            if ($attempt < $maxRetry) {
+                usleep($delayMs * 1000);
+            }
+        }
+
+        return $lastResponse;
+    }
+
+    function get_tiktok_photo_images($content_id, $url = null)
+    {
+        $response = array(
+            "status" => false,
+            "msg" => "",
+            "data" => array(),
+        );
+
+        $CI = get_instance();
+        if (!isset($CI->db)) {
+            $response["msg"] = "Database tidak tersedia";
+            return $response;
+        }
+
+        if (!$CI->db->field_exists('tiktok_content_link', 'endorse')) {
+            $response["msg"] = "Kolom tiktok_content_link tidak ditemukan pada tabel endorse";
+            return $response;
+        }
+
+        $where = array();
+        if ($content_id) {
+            $where[] = "tiktok_content_id = '" . $CI->db->escape_str($content_id) . "'";
+        }
+        if ($url) {
+            $where[] = "link_upload = '" . $CI->db->escape_str($url) . "'";
+        }
+
+        if (empty($where)) {
+            $response["msg"] = "Content ID tidak ditemukan";
+            return $response;
+        }
+
+        $query = $CI->db->query("
+            SELECT tiktok_content_link, tiktok_cover, tiktok_media_type
+            FROM endorse
+            WHERE (" . implode(' OR ', $where) . ")
+            ORDER BY CASE WHEN LOWER(COALESCE(tiktok_media_type, '')) = 'photo' THEN 0 ELSE 1 END, id DESC
+            LIMIT 1
+        ");
+        $row = $query ? $query->row_array() : array();
+
+        if (empty($row)) {
+            $response["msg"] = "Data foto tiktok tidak ditemukan di database";
+            return $response;
+        }
+
+        $images = json_decode((string)($row['tiktok_content_link'] ?? ''), true);
+        if (!is_array($images)) {
+            $images = array();
+        }
+
+        $images = array_values(array_filter($images, function ($img) {
+            return is_string($img) && trim($img) !== '';
+        }));
+
+        if (count($images) === 0 && !empty($row['tiktok_cover'])) {
+            $images[] = (string)$row['tiktok_cover'];
+        }
+
+        if (count($images) === 0) {
+            $response["msg"] = "Foto tiktok tidak ditemukan di database";
+            return $response;
+        }
+
+        $response["status"] = true;
+        $response["data"] = $images;
+        return $response;
+    }
+
+    function get_tiktok_video_play($url)
+    {
+        $response = array(
+            "status" => false,
+            "msg" => "",
+            "data" => array(),
+        );
+
+        if (!$url) {
+            $response["msg"] = "URL tidak ditemukan";
+            return $response;
+        }
+
+        $CI = get_instance();
+        if (!isset($CI->db)) {
+            $response["msg"] = "Database tidak tersedia";
+            return $response;
+        }
+
+        if (!$CI->db->field_exists('tiktok_content_link', 'endorse')) {
+            $response["msg"] = "Kolom tiktok_content_link tidak ditemukan pada tabel endorse";
+            return $response;
+        }
+
+        $query = $CI->db->query("
+            SELECT tiktok_content_link, tiktok_media_type
+            FROM endorse
+            WHERE link_upload = '" . $CI->db->escape_str($url) . "'
+            ORDER BY id DESC
+            LIMIT 1
+        ");
+        $row = $query ? $query->row_array() : array();
+
+        if (strtolower((string)($row['tiktok_media_type'] ?? '')) === 'photo') {
+            $response["msg"] = "Konten tiktok ini berupa foto";
+            return $response;
+        }
+
+        $play = trim((string)($row['tiktok_content_link'] ?? ''));
+        if ($play === '') {
+            $response["msg"] = "Video tiktok tidak ditemukan di database";
+            return $response;
+        }
+
+        $response["status"] = true;
+        $response["data"] = array(
+            "play" => $play,
+        );
+        return $response;
+    }
+
+    function title()
+    {
+        return 'Montera App';
+    }
+
+    function hex($i)
+    {
+        $flat_colors = [
+            "#009999",
+            "#9999FF",
+            "#FFD966",
+            "#FF0066",
+            "#5a99d4",
+            "#71ad44",
+            "#c4ddcb",
+            "#1abc9c",
+            "#2ecc71",
+            "#3498db",
+            "#9b59b6",
+            "#34495e",
+            "#16a085",
+            "#27ae60",
+            "#2980b9",
+            "#8e44ad",
+            "#2c3e50",
+            "#f1c40f",
+            "#e67e22",
+            "#e74c3c",
+            "#ecf0f1",
+            "#95a5a6",
+            "#f39c12",
+            "#d35400",
+            "#c0392b",
+            "#bdc3c7",
+            "#7f8c8d"
+        ];
+        return $flat_colors[$i];
+    }
+    function get_name_from_number($num)
+    {
+        $numeric = ($num - 1) % 26;
+        $letter = chr(65 + $numeric);
+        $num2 = intval(($num - 1) / 26);
+        if ($num2 > 0) {
+            return $this->get_name_from_number($num2) . $letter;
+        } else {
+            return $letter;
+        }
+    }
+
+    function set_session($var, $val)
+    {
+        $session = \Config\Services::session();
+        $session->set($var, $val);
+    }
+
+    function get_session($var)
+    {
+        $session = \Config\Services::session();
+        return $session->get($var);
+    }
+
+    function date_format($date)
+    {
+        return DATE("d-M-Y", strtotime($date));
+    }
+
+    function datetime_to_date($date)
+    {
+        return DATE("Y-m-d", strtotime($date));
+    }
+    function date_to_week($date)
+    {
+        return DATE("W", strtotime($date));
+    }
+    function date_to_month($date)
+    {
+        return DATE("M", strtotime($date));
+    }
+    function date_to_month_number($date)
+    {
+        return DATE("m", strtotime($date));
+    }
+    function date_to_year($date)
+    {
+        return DATE("Y", strtotime($date));
+    }
+    public function date_to_date($date)
+    {
+        $date = explode("-", $date);
+        $arr = array();
+        $arr['Jan'] = '01';
+        $arr['Feb'] = '02';
+        $arr['Mar'] = '03';
+        $arr['Apr'] = '04';
+        $arr['May'] = '05';
+        $arr['Jun'] = '06';
+        $arr['Jul'] = '07';
+        $arr['Aug'] = '08';
+        $arr['Sep'] = '09';
+        $arr['Oct'] = '10';
+        $arr['Nov'] = '11';
+        $arr['Dec'] = '12';
+        $date[1] = $arr[$date[1]];
+        $date = $date[2] . '-' . $date[1] . '-' . $date[0];
+        return $date;
+    }
+
+    function alert_danger($text)
+    {
+        $text = str_replace(array("\r", "\n"), '', $text);
+        $text_js = json_encode($text, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+        $text = '<script>
+                        $( document ).ready(function() {
+                        $.toast({
+                            heading: "Informasi",
+                            text: ' . $text_js . ',
+                            showHideTransition: "slide",
+                            icon: "error",
+                            position: "top-right",
+                            loaderBg: "#def7f0",
+                            hideAfter: 5000, 
+                        });
+                    });
+                </script>';
+        return $text;
+    }
+
+    function alert_success($text)
+    {
+        $text = str_replace(array("\r", "\n"), '', $text);
+        $text_js = json_encode($text, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+        $text = '<script success type="text/javascript">
+                    $( document ).ready(function() {
+                    $.toast({
+                        heading: "Informasi",
+                        text: ' . $text_js . ',
+                        showHideTransition: "slide",
+                        icon: "success",
+                        position: "top-right",
+                        loaderBg: "#def7f0", 
+                        hideAfter: 2500,
+                    });
+                });
+            </script>';
+        return $text;
+    }
+
+    function set_number($angka)
+    {
+        $angka = str_replace(',', '', $angka);
+        // $angka = str_replace('.','',$angka);
+        $angka = str_replace('Rp', '', $angka);
+        return doubleval($angka);
+    }
+
+    public function separator_only($angka)
+    {
+        // echo $angka;die;
+        // echo $angka;die;
+        $angka = $this->set_number($angka);
+        return number_format(doubleval($angka), 0, ',', '.');
+    }
+
+
+    public function separator($angka)
+    {
+        $number = $angka;
+        if (floor($number) == $number) {
+            // No decimal places
+            return number_format($number, 0, ',', '.');
+        } else {
+            // With decimal places
+            return number_format($number, 3, ',', '.');
+        }
+    }
+    public function separator_1($angka)
+    {
+        $number = $angka;
+        if (floor($number) == $number) {
+            // No decimal places
+            return number_format($number, 0, ',', '.');
+        } else {
+            // With decimal places
+            return number_format($number, 1, ',', '.');
+        }
+    }
+    public function separator_2($angka)
+    {
+        $number = $angka;
+        if (floor($number) == $number) {
+            // No decimal places
+            return number_format($number, 0, ',', '.');
+        } else {
+            // With decimal places
+            return number_format($number, 2, ',', '.');
+        }
+    }
+    public function separator_number_only($angka)
+    {
+        $angka = $this->set_number($angka);
+        return number_format(round($angka), 0, '.', '');
+    }
+    public function separator_number($angka)
+    {
+        $number = $angka;
+        if (floor($number) == $number) {
+            // No decimal places
+            return number_format($number, 0, '.', '');
+        } else {
+            // With decimal places
+            return number_format($number, 3, '.', '');
+        }
+    }
+    public function separator_number_1($angka)
+    {
+        $number = $angka;
+        if (floor($number) == $number) {
+            // No decimal places
+            return number_format($number, 0, '.', '');
+        } else {
+            // With decimal places
+            return number_format($number, 1, '.', '');
+        }
+    }
+    public function separator_number_2($angka)
+    {
+        $number = $angka;
+        if (floor($number) == $number) {
+            // No decimal places
+            return number_format($number, 0, '.', '');
+        } else {
+            // With decimal places
+            return number_format($number, 2, '.', '');
+        }
+    }
+
+    function ai_gateway_api_url()
+    {
+        $url = '';
+        $CI = get_instance();
+
+        if (isset($CI->config)) {
+            $url = (string)$CI->config->item('ai_gateway_url');
+        }
+
+        if (!$url) {
+            $url = getenv('AI_GATEWAY_URL');
+        }
+        if (!$url && isset($_ENV['AI_GATEWAY_URL'])) {
+            $url = $_ENV['AI_GATEWAY_URL'];
+        }
+        if (!$url && isset($_SERVER['AI_GATEWAY_URL'])) {
+            $url = $_SERVER['AI_GATEWAY_URL'];
+        }
+
+        return trim((string)$url);
+    }
+
+    function ai_gateway_api_key()
+    {
+        $key = '';
+        $CI = get_instance();
+
+        if (isset($CI->config)) {
+            $key = (string)$CI->config->item('ai_gateway_api_key');
+        }
+
+        if (!$key) {
+            $key = getenv('AI_GATEWAY_API_KEY');
+        }
+        if (!$key && isset($_ENV['AI_GATEWAY_API_KEY'])) {
+            $key = $_ENV['AI_GATEWAY_API_KEY'];
+        }
+        if (!$key && isset($_SERVER['AI_GATEWAY_API_KEY'])) {
+            $key = $_SERVER['AI_GATEWAY_API_KEY'];
+        }
+
+        return trim((string)$key);
+    }
+
+    function ai_gateway_default_max_tokens()
+    {
+        $max_tokens = 256;
+        $CI = get_instance();
+
+        if (isset($CI->config)) {
+            $configured = intval($CI->config->item('ai_gateway_max_tokens'));
+            if ($configured > 0) {
+                $max_tokens = $configured;
+            }
+        }
+
+        $env_tokens = getenv('AI_GATEWAY_MAX_TOKENS');
+        if ($env_tokens !== false && intval($env_tokens) > 0) {
+            $max_tokens = intval($env_tokens);
+        }
+
+        return $max_tokens;
+    }
+
+    function ai_gateway_default_model()
+    {
+        $model = '';
+        $CI = get_instance();
+
+        if (isset($CI->config)) {
+            $model = (string)$CI->config->item('ai_gateway_model');
+        }
+
+        if (!$model) {
+            $model = getenv('AI_GATEWAY_MODEL');
+        }
+        if (!$model && isset($_ENV['AI_GATEWAY_MODEL'])) {
+            $model = $_ENV['AI_GATEWAY_MODEL'];
+        }
+        if (!$model && isset($_SERVER['AI_GATEWAY_MODEL'])) {
+            $model = $_SERVER['AI_GATEWAY_MODEL'];
+        }
+
+        return trim((string)$model);
+    }
+
+    function ai_gateway_default_headers($extra_headers = array())
+    {
+        $api_key = $this->ai_gateway_api_key();
+        $headers = array(
+            'Content-Type: application/json',
+            'x-api-key: ' . $api_key
+        );
+
+        if (!empty($extra_headers) && is_array($extra_headers)) {
+            $headers = array_merge($headers, $extra_headers);
+        }
+
+        return $headers;
+    }
+
+    function ai_gateway_content_text($content)
+    {
+        if (is_string($content)) {
+            return $content;
+        }
+
+        if (!is_array($content)) {
+            return '';
+        }
+
+        if (isset($content['text'])) {
+            return (string)$content['text'];
+        }
+
+        $text = '';
+        foreach ($content as $item) {
+            if (is_string($item)) {
+                $text .= $item;
+            } elseif (is_array($item) && isset($item['text'])) {
+                $text .= (string)$item['text'];
+            }
+        }
+
+        return $text;
+    }
+
+    function ai_gateway_normalize_messages($messages, $prompt, &$system)
+    {
+        $normalized = array();
+
+        if (is_array($messages)) {
+            foreach ($messages as $message) {
+                if (!is_array($message)) {
+                    continue;
+                }
+
+                $role = strtolower(trim((string)($message['role'] ?? 'user')));
+                $content = $message['content'] ?? '';
+
+                if ($role === 'system') {
+                    $system_text = trim($this->ai_gateway_content_text($content));
+                    if ($system_text !== '') {
+                        $system = trim($system . ($system !== '' ? "\n" : '') . $system_text);
+                    }
+                    continue;
+                }
+
+                if ($role !== 'assistant') {
+                    $role = 'user';
+                }
+
+                $normalized[] = array(
+                    'role' => $role,
+                    'content' => $content
+                );
+            }
+        }
+
+        if (empty($normalized) && trim((string)$prompt) !== '') {
+            $normalized[] = array(
+                'role' => 'user',
+                'content' => trim((string)$prompt)
+            );
+        }
+
+        return $normalized;
+    }
+
+    function ai_gateway_extract_text($decoded)
+    {
+        if (!empty($decoded['content'])) {
+            if (is_string($decoded['content'])) {
+                return (string)$decoded['content'];
+            }
+
+            if (is_array($decoded['content'])) {
+                return trim($this->ai_gateway_content_text($decoded['content']));
+            }
+        }
+
+        if (!empty($decoded['choices'][0]['message']['content'])) {
+            return (string)$decoded['choices'][0]['message']['content'];
+        }
+
+        if (!empty($decoded['output_text'])) {
+            return (string)$decoded['output_text'];
+        }
+
+        if (!empty($decoded['text'])) {
+            return (string)$decoded['text'];
+        }
+
+        if (!empty($decoded['message']) && is_string($decoded['message'])) {
+            return (string)$decoded['message'];
+        }
+
+        return '';
+    }
+
+    function ai_gateway_decode_sse_response($response)
+    {
+        $events = array();
+        $message = array(
+            'type' => 'message',
+            'role' => 'assistant',
+            'content' => array()
+        );
+        $text = '';
+
+        $lines = preg_split('/\r\n|\r|\n/', (string)$response);
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (strpos($line, 'data:') !== 0) {
+                continue;
+            }
+
+            $data = trim(substr($line, 5));
+            if ($data === '' || $data === '[DONE]') {
+                continue;
+            }
+
+            $event = json_decode($data, true);
+            if (!is_array($event)) {
+                continue;
+            }
+
+            $events[] = $event;
+            $type = (string)($event['type'] ?? '');
+
+            if ($type === 'message_start' && !empty($event['message']) && is_array($event['message'])) {
+                $message = array_merge($message, $event['message']);
+                continue;
+            }
+
+            if ($type === 'content_block_start' && !empty($event['content_block']['text'])) {
+                $text .= (string)$event['content_block']['text'];
+                continue;
+            }
+
+            if ($type === 'content_block_delta' && !empty($event['delta']['text'])) {
+                $text .= (string)$event['delta']['text'];
+                continue;
+            }
+
+            if ($type === 'message_delta' && !empty($event['delta']) && is_array($event['delta'])) {
+                $message = array_merge($message, $event['delta']);
+                if (!empty($event['usage']) && is_array($event['usage'])) {
+                    $message['usage'] = array_merge($message['usage'] ?? array(), $event['usage']);
+                }
+                continue;
+            }
+
+            if ($type === 'error') {
+                $message['error'] = $event['error'] ?? $event;
+            }
+        }
+
+        if (empty($events)) {
+            return null;
+        }
+
+        if ($text !== '') {
+            $message['content'] = array(
+                array(
+                    'type' => 'text',
+                    'text' => $text
+                )
+            );
+        }
+
+        $message['events'] = $events;
+        $message['raw_stream'] = true;
+
+        return $message;
+    }
+
+    function ai_gateway_chat($params = array())
+    {
+        $api_key = $this->ai_gateway_api_key();
+        if ($api_key === '') {
+            return array(
+                'status' => false,
+                'msg' => 'AI_GATEWAY_API_KEY belum diset',
+                'http_code' => 0,
+                'data' => array(),
+                'raw' => ''
+            );
+        }
+
+        $api_url = $this->ai_gateway_api_url();
+        if ($api_url === '') {
+            return array(
+                'status' => false,
+                'msg' => 'AI_GATEWAY_URL belum diset',
+                'http_code' => 0,
+                'data' => array(),
+                'raw' => ''
+            );
+        }
+
+        $messages = $params['messages'] ?? array();
+        $prompt = trim((string)($params['prompt'] ?? ''));
+        $system = trim((string)($params['system'] ?? ''));
+        $extra_headers = $params['headers'] ?? array();
+        $timeout = intval($params['timeout'] ?? 120);
+        $is_stream = !empty($params['stream']);
+
+        if ($is_stream) {
+            return array(
+                'status' => false,
+                'msg' => 'Mode stream belum didukung oleh helper ai_gateway_chat',
+                'http_code' => 0,
+                'data' => array(),
+                'raw' => ''
+            );
+        }
+
+        $messages = $this->ai_gateway_normalize_messages($messages, $prompt, $system);
+        if (empty($messages)) {
+            return array(
+                'status' => false,
+                'msg' => 'messages atau prompt wajib diisi',
+                'http_code' => 0,
+                'data' => array(),
+                'raw' => ''
+            );
+        }
+
+        $max_tokens = array_key_exists('max_tokens', $params)
+            ? intval($params['max_tokens'])
+            : $this->ai_gateway_default_max_tokens();
+
+        $payload = array(
+            'max_tokens' => $max_tokens > 0 ? $max_tokens : $this->ai_gateway_default_max_tokens(),
+            'messages' => array_values($messages)
+        );
+
+        if ($system !== '') {
+            $payload['system'] = $system;
+        }
+
+        $model = trim((string)($params['model'] ?? $this->ai_gateway_default_model()));
+        if ($model !== '') {
+            $payload['model'] = $model;
+        }
+
+        $optional_keys = array(
+            'temperature',
+            'top_p',
+            'stop_sequences',
+            'metadata',
+            'thinking',
+            'tools',
+            'tool_choice'
+        );
+
+        foreach ($optional_keys as $key) {
+            if (array_key_exists($key, $params)) {
+                $payload[$key] = $params[$key];
+            }
+        }
+
+        if (array_key_exists('stop', $params) && !array_key_exists('stop_sequences', $payload)) {
+            $payload['stop_sequences'] = is_array($params['stop']) ? $params['stop'] : array($params['stop']);
+        }
+
+        if (!empty($params['extra']) && is_array($params['extra'])) {
+            $payload = array_merge($payload, $params['extra']);
+        }
+
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $api_url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => $timeout > 0 ? $timeout : 120,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => json_encode($payload),
+            CURLOPT_HTTPHEADER => $this->ai_gateway_default_headers($extra_headers),
+        ));
+
+        $response = curl_exec($curl);
+        $http_code = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $curl_error = curl_error($curl);
+        curl_close($curl);
+
+        if ($curl_error) {
+            return array(
+                'status' => false,
+                'msg' => 'cURL Error: ' . $curl_error,
+                'http_code' => $http_code,
+                'data' => array(),
+                'raw' => ''
+            );
+        }
+
+        $decoded = json_decode($response, true);
+        if (!is_array($decoded)) {
+            $decoded = $this->ai_gateway_decode_sse_response($response);
+        }
+
+        if (!is_array($decoded)) {
+            return array(
+                'status' => false,
+                'msg' => 'Response AI Gateway tidak valid',
+                'http_code' => $http_code,
+                'data' => array(),
+                'raw' => (string)$response
+            );
+        }
+
+        $is_success = $http_code >= 200 && $http_code < 300 && empty($decoded['error']);
+        $message = $is_success
+            ? 'Request AI Gateway berhasil'
+            : (string)($decoded['error']['message'] ?? $decoded['message'] ?? 'Request AI Gateway gagal');
+
+        return array(
+            'status' => $is_success,
+            'msg' => $message,
+            'http_code' => $http_code,
+            'text' => $this->ai_gateway_extract_text($decoded),
+            'data' => $decoded,
+            'raw' => (string)$response,
+            'payload' => $payload
+        );
+    }
+
+    function openrouter_api_url()
+    {
+        return $this->ai_gateway_api_url();
+    }
+
+    function openrouter_api_key()
+    {
+        return $this->ai_gateway_api_key();
+    }
+
+    function openrouter_default_headers($extra_headers = array())
+    {
+        return $this->ai_gateway_default_headers($extra_headers);
+    }
+
+    function openrouter_chat($params = array())
+    {
+        return $this->ai_gateway_chat($params);
+    }
+}

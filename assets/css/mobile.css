@@ -1,0 +1,108 @@
+/* ====== MONTERA MOBILE — HANYA area konten, sidebar & login TIDAK disentuh ====== */
+@media (max-width: 767.98px) {
+
+  /* KARTU DASHBOARD — angka tidak kepotong */
+  .content-body .card .card-body { padding: 12px !important; }
+  .content-body .card h2,
+  .content-body .card h3,
+  .content-body .card h4 {
+    font-size: clamp(.9rem, 4.3vw, 1.3rem) !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  .content-body .card small { font-size: .72rem !important; }
+
+  /* KOLOM menumpuk — hanya di dalam konten */
+  .content-body [class*="col-md-"],
+  .content-body [class*="col-lg-"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+
+  /* TABEL bisa digeser */
+  .content-body #tbody,
+  .content-body .table-responsive { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+  .content-body table { font-size: .78rem !important; }
+  .content-body table th,
+  .content-body table td { white-space: nowrap !important; padding: .45rem .5rem !important; }
+
+  /* FORM nyaman disentuh, tidak auto-zoom iOS */
+  .content-body .form-control,
+  .content-body .form-select { font-size: 16px !important; min-height: 44px !important; }
+  .content-body .select2-container { width: 100% !important; }
+
+  /* TOMBOL tidak tumpang tindih */
+  .content-body .card-header { flex-wrap: wrap !important; gap: 8px !important; }
+  .content-body .btn { min-height: 42px !important; font-size: .85rem !important; }
+  .content-body .btn.float-end { float: none !important; }
+
+  /* MODAL */
+  .modal-dialog { margin: .5rem !important; max-width: calc(100% - 1rem) !important; }
+
+  /* padding halaman */
+  .content-body { padding: 14px !important; }
+  .content-body img { max-width: 100% !important; height: auto !important; }
+}
+
+/* ====== ABSENSI · ROLE · ORDER · REPORT · MODULES ====== */
+@media (max-width: 767.98px) {
+
+  /* TREE PERMISSION (Role & Modules) */
+  .content-body .montera-tree { max-height: 58vh !important; padding: 4px 6px !important; }
+  .content-body .montera-tree .mt-kids { margin-left: 6px !important; padding-left: 10px !important; }
+  .content-body .montera-tree .mt-row { padding: 9px 4px !important; }
+  .content-body .montera-tree label { font-size: .84rem !important; }
+  .content-body .montera-tree .mt-act { font-size: .8rem !important; }
+
+  /* baris "Pilih Semua Akses" menumpuk */
+  .content-body .d-flex.gap-3.flex-wrap { flex-direction: column !important; gap: .5rem !important; align-items: flex-start !important; }
+
+  /* TABEL PANJANG (Order/Transaction/Report) */
+  .content-body #tbody > table { min-width: 620px !important; }
+  .content-body .dataTables_wrapper { overflow-x: auto !important; }
+  .content-body .dataTables_filter, .content-body .dataTables_length { width: 100% !important; text-align: left !important; margin-bottom: 8px !important; }
+  .content-body .dataTables_filter input { width: 100% !important; margin: 4px 0 0 0 !important; }
+  .content-body .dataTables_paginate { float: none !important; text-align: center !important; margin-top: 10px !important; }
+
+  /* ABSENSI */
+  .content-body .attendance-card, .content-body .absen-box { width: 100% !important; }
+  .content-body .fc { font-size: .76rem !important; }
+  .content-body .fc-toolbar { flex-direction: column !important; gap: 8px !important; }
+  .content-body .fc-toolbar-title { font-size: 1rem !important; }
+
+  /* REPORT — filter menumpuk */
+  .content-body .row.mb-3 > div, .content-body .filter-row > div { margin-bottom: 8px !important; }
+  .content-body canvas { max-width: 100% !important; height: auto !important; }
+
+  /* tab scroll horizontal */
+  .content-body .nav-tabs { flex-wrap: nowrap !important; overflow-x: auto !important; }
+  .content-body .nav-tabs .nav-link { white-space: nowrap !important; font-size: .8rem !important; }
+}
+
+/* ═══ CHAT: panel anggota jadi slide-in penuh layar di HP ═══ */
+@media (max-width: 767.98px) {
+  .ch-side {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    z-index: 500 !important;
+    transform: translateX(100%) !important;
+    transition: transform .28s cubic-bezier(.2,.9,.3,1) !important;
+    background: #fff !important;
+  }
+  .ch-side.mobile-on { transform: none !important; }
+  .ch-wrap { overflow: visible !important; }
+}
+
+@media (max-width: 767.98px) {
+  .ch-side-close {
+    display: block !important;
+    position: absolute; top: 12px; right: 12px;
+    width: 34px; height: 34px; border-radius: 50%;
+    background: #f1f5f9; border: 0; color: #475569; font-size: 1rem; z-index: 10;
+  }
+}
+.ch-side-close { display: none; }

@@ -1,0 +1,42 @@
+/.DS_Store
+/.env
+/composer.json
+/composer.lock
+/license.txt
+/node_modules
+/package-lock.json
+/package.json
+/readme.rst
+/system
+/vendor
+/docs
+.env
+
+# --- ditambahkan 21 Sep 2026 sebelum push pertama ---
+# Data pribadi karyawan: foto wajah absensi, berkas HRD.
+/uploads/
+# Dump database di root: berisi data karyawan dan transaksi.
+/db.sql
+*.sql
+# Sampah runtime.
+/ci_sessions/
+/application/logs/*
+!/application/logs/index.html
+/application/cache/*
+!/application/cache/index.html
+# Cadangan tambalan (me.php.b4resultmodal dst).
+*.b4*
+# Label PDF hasil cetak.
+/assets/label/
+# Kunci privat Web Push dan kredensial layanan.
+/application/config/vapid.php
+*service-account*.json
+*firebase*.json
+*.pem
+*.key
+.env
+.env
+.env *
+.DS_Store
+install/*.apk
+.env*

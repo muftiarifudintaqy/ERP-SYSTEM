@@ -1,0 +1,232 @@
+.bhs-reward-alert {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #ffd666;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #fff7e6 0%, #f6ffed 52%, #e6f7ff 100%);
+    box-shadow: 0 12px 28px rgba(250, 173, 20, 0.18);
+    padding: 16px 48px 16px 18px;
+}
+
+.bhs-reward-alert::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.55) 42%, transparent 62%);
+    transform: translateX(-100%);
+    animation: bhs-reward-shine 2.8s ease-in-out 1;
+    pointer-events: none;
+}
+
+.bhs-reward-layout {
+    position: relative;
+    z-index: 1;
+}
+
+.bhs-reward-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #faad14;
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(250, 173, 20, 0.35);
+    font-size: 26px;
+    flex: 0 0 auto;
+}
+
+.bhs-reward-kicker {
+    color: #ad6800;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.bhs-reward-title {
+    color: rgba(0,0,0,0.88);
+    font-size: 19px;
+    font-weight: 700;
+    margin: 2px 0;
+}
+
+.bhs-reward-message {
+    color: rgba(0,0,0,0.78);
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+.bhs-reward-note {
+    color: rgba(0,0,0,0.68);
+    font-size: 13px;
+    line-height: 1.5;
+    margin-top: 6px;
+}
+
+.bhs-reward-points {
+    min-width: 88px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid rgba(250, 173, 20, 0.35);
+    text-align: center;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.55);
+}
+
+.bhs-reward-points strong {
+    color: #52c41a;
+    display: block;
+    font-size: 24px;
+    line-height: 1;
+}
+
+.bhs-reward-points span {
+    color: rgba(0,0,0,0.45);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.bhs-reward-alert .btn-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+}
+
+.bhs-reward-modal .modal-dialog {
+    max-width: 460px;
+}
+
+.bhs-reward-modal .modal-content {
+    border: 1px solid #ffd666;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+}
+
+.bhs-reward-modal-card {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #fff7e6 0%, #f6ffed 54%, #e6f7ff 100%);
+    padding: 28px 24px 24px;
+    text-align: center;
+}
+
+.bhs-reward-modal-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.58) 42%, transparent 62%);
+    transform: translateX(-100%);
+    animation: bhs-reward-shine 2.8s ease-in-out 1;
+    pointer-events: none;
+}
+
+.bhs-reward-modal-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.bhs-reward-modal .bhs-reward-icon {
+    width: 74px;
+    height: 74px;
+    margin: 0 auto 14px;
+    border-radius: 18px;
+    font-size: 38px;
+}
+
+.bhs-reward-modal .bhs-reward-title {
+    font-size: 24px;
+    line-height: 1.25;
+}
+
+.bhs-reward-modal .bhs-reward-message {
+    font-size: 15px;
+}
+
+.bhs-reward-modal .bhs-reward-note {
+    background: rgba(255,255,255,0.72);
+    border: 1px solid rgba(250, 173, 20, 0.28);
+    border-radius: 8px;
+    margin: 14px 0 0;
+    padding: 10px 12px;
+}
+
+.bhs-reward-modal .bhs-reward-points {
+    margin: 16px auto 0;
+    min-width: 118px;
+}
+
+.bhs-reward-modal .bhs-reward-points strong {
+    font-size: 34px;
+}
+
+.bhs-reward-modal .btn-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+}
+
+.bhs-reward-balloon-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 1060;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.bhs-reward-balloon-layer span {
+    position: absolute;
+    left: var(--left);
+    bottom: -90px;
+    font-size: var(--size);
+    opacity: 0;
+    filter: drop-shadow(0 8px 12px rgba(0,0,0,0.14));
+    animation: bhs-reward-balloon-rise var(--duration) ease-in forwards;
+    animation-delay: var(--delay);
+}
+
+@keyframes bhs-reward-shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+@keyframes bhs-reward-balloon-rise {
+    0% {
+        transform: translate3d(0, 0, 0) rotate(-6deg) scale(0.9);
+        opacity: 0;
+    }
+    12% {
+        opacity: 1;
+    }
+    55% {
+        transform: translate3d(var(--drift), -52vh, 0) rotate(7deg) scale(1);
+        opacity: 0.95;
+    }
+    100% {
+        transform: translate3d(var(--drift-end), -108vh, 0) rotate(-10deg) scale(1.05);
+        opacity: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .bhs-reward-alert {
+        padding-right: 38px;
+    }
+
+    .bhs-reward-layout {
+        align-items: flex-start !important;
+    }
+
+    .bhs-reward-points {
+        width: 100%;
+    }
+
+    .bhs-reward-modal .modal-dialog {
+        margin: 16px;
+    }
+}

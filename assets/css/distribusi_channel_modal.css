@@ -1,0 +1,272 @@
+.distribusi-modal .modal-header {
+    border-bottom: 1px solid #e5edf5;
+    padding: 18px 22px;
+}
+
+.distribusi-modal .modal-title {
+    font-weight: 700;
+    color: #1b2a3d;
+}
+
+.distribusi-modal .modal-subtitle {
+    font-size: 0.85rem;
+    color: #7b8ca4;
+    margin-top: 4px;
+}
+
+.distribusi-modal .modal-body {
+    padding: 22px;
+}
+
+.distribusi-modal .modal-footer {
+    border-top: 1px solid #e5edf5;
+    padding: 14px 22px;
+}
+
+.distribusi-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #7b8ca4;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.distribusi-layout {
+    display: grid;
+    grid-template-columns: minmax(240px, 0.9fr) minmax(280px, 1.2fr);
+    gap: 24px;
+    align-items: center;
+}
+
+.distribusi-left {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.distribusi-donut-wrap {
+    width: 220px;
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.distribusi-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    font-size: 0.85rem;
+    color: #6b7c93;
+    font-weight: 600;
+}
+
+.distribusi-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.distribusi-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.distribusi-panel {
+    background: #f7fafc;
+    border: 1px solid #e3ebf3;
+    border-radius: 16px;
+    padding: 12px 16px;
+}
+
+.distribusi-panel-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.distribusi-panel-grid.is-gmv {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.distribusi-panel-col {
+    background: #ffffff;
+    border: 1px solid #e5edf5;
+    border-radius: 14px;
+    padding: 12px 14px;
+}
+
+.distribusi-panel-col h6 {
+    font-weight: 700;
+    color: #1b2a3d;
+    margin-bottom: 10px;
+}
+
+.distribusi-panel-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #e5edf5;
+}
+
+.distribusi-panel-item:last-child {
+    border-bottom: none;
+}
+
+.distribusi-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1b2a3d;
+}
+
+.distribusi-panel-grid.is-gmv .distribusi-panel-title {
+    color: #7b8ca4;
+}
+
+.distribusi-panel-value {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-top: 6px;
+}
+
+.distribusi-panel-change {
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.distribusi-panel-change.up {
+    color: #1d9b5c;
+}
+
+.distribusi-panel-change.down {
+    color: #d64545;
+}
+
+.distribusi-breakdown {
+    margin-top: 18px;
+    border-top: 1px solid #e5edf5;
+    padding-top: 12px;
+}
+
+.distribusi-breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.distribusi-breakdown-table th,
+.distribusi-breakdown-table td {
+    padding: 10px 6px;
+    border-bottom: 1px solid #e5edf5;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.distribusi-breakdown-table th {
+    font-size: 0.8rem;
+    color: #6b7c93;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+}
+
+.distribusi-breakdown-table td:not(:first-child),
+.distribusi-breakdown-table th:not(:first-child) {
+    text-align: right;
+}
+
+.distribusi-gmv-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.distribusi-gmv-summary.distribusi-gmv-summary-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.distribusi-channel-item {
+    border: 1px solid #e5edf5;
+    border-radius: 12px;
+    padding: 10px 12px;
+    background: #f8fbfd;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #44566c;
+    font-weight: 600;
+}
+
+.distribusi-channel-item strong {
+    color: #0f172a;
+    font-size: 0.95rem;
+}
+
+.distribusi-daily-chart-wrap {
+    height: 360px;
+    border: 1px solid #e5edf5;
+    border-radius: 12px;
+    padding: 10px;
+    background: #fff;
+}
+
+.ads-donut-layout {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(180px, 0.9fr);
+    gap: 12px;
+    align-items: stretch;
+}
+
+.ads-donut-wrap {
+    height: 260px;
+}
+
+.ads-platform-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+@media (max-width: 768px) {
+    .distribusi-layout {
+        grid-template-columns: 1fr;
+    }
+    .distribusi-panel-grid {
+        grid-template-columns: 1fr;
+    }
+    .distribusi-panel-grid.is-gmv {
+        grid-template-columns: 1fr;
+    }
+    .distribusi-donut-wrap {
+        width: 200px;
+        height: 200px;
+    }
+    .distribusi-gmv-summary {
+        grid-template-columns: 1fr;
+    }
+    .distribusi-daily-chart-wrap {
+        height: 280px;
+    }
+    .ads-donut-layout {
+        grid-template-columns: 1fr;
+    }
+    .ads-donut-wrap {
+        height: 220px;
+    }
+}

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pasang Aplikasi Montera</title>
+<link rel="icon" href="/assets/img/fav.png">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+background:linear-gradient(160deg,#6E4FA8 0%,#4a3272 100%);min-height:100vh;
+color:#1e293b;padding:24px 16px;display:flex;flex-direction:column;align-items:center}
+.logo{width:76px;height:76px;border-radius:20px;background:#fff;display:flex;
+align-items:center;justify-content:center;margin:12px auto 16px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.logo img{width:52px;height:52px;object-fit:contain}
+h1{color:#fff;font-size:22px;text-align:center;margin-bottom:6px}
+.sub{color:#e2d9f5;font-size:14px;text-align:center;margin-bottom:24px}
+.card{background:#fff;border-radius:18px;padding:22px;width:100%;max-width:460px;
+box-shadow:0 10px 30px rgba(0,0,0,.18);margin-bottom:16px}
+.card h2{font-size:17px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.card p{font-size:14px;color:#64748b;line-height:1.55;margin-bottom:16px}
+.btn{display:block;background:#6E4FA8;color:#fff;text-decoration:none;text-align:center;
+padding:15px;border-radius:12px;font-weight:700;font-size:16px}
+.btn:active{background:#5a3f8c}
+ol{margin:0 0 4px 20px;font-size:14px;line-height:2;color:#334155}
+ol b{color:#6E4FA8}
+.tip{background:#f6f3fc;border-left:4px solid #6E4FA8;padding:12px 14px;
+border-radius:8px;font-size:13px;color:#4a3272;line-height:1.5;margin-top:14px}
+.lain{color:#e2d9f5;font-size:13px;text-align:center;margin-top:6px;text-decoration:underline;cursor:pointer}
+.hide{display:none}
+.ikon{font-size:20px}
+</style>
+</head>
+<body>
+
+<div class="logo"><img src="/assets/img/icon-192.png" alt="Montera"></div>
+<h1>Aplikasi Montera</h1>
+<p class="sub">Absensi, chat tim, dan notifikasi dalam satu aplikasi</p>
+
+<!-- ANDROID -->
+<div class="card hide" id="kartuAndroid">
+  <h2><span class="ikon">🤖</span> Untuk Android</h2>
+  <p>Unduh dan pasang aplikasinya. Kalau muncul peringatan "sumber tidak dikenal", pilih <b>Tetap pasang</b> — ini aplikasi resmi kantor.</p>
+  <a class="btn" href="/install/montera.apk" download>Unduh Aplikasi (APK)</a>
+  <div class="tip">
+    <b>Setelah terpasang:</b><br>
+    Buka aplikasinya, login, lalu izinkan notifikasi saat diminta.
+  </div>
+</div>
+
+<!-- IOS -->
+<div class="card hide" id="kartuIos">
+  <h2><span class="ikon">🍎</span> Untuk iPhone / iPad</h2>
+  <p>Ikuti langkah berikut memakai <b>Safari</b> (tidak bisa lewat Chrome):</p>
+  <ol>
+    <li>Tekan tombol <b>Bagikan</b> di bawah layar (kotak dengan panah ke atas)</li>
+    <li>Geser ke bawah, pilih <b>Tambahkan ke Layar Utama</b></li>
+    <li>Tekan <b>Tambah</b> di pojok kanan atas</li>
+    <li>Buka aplikasi Montera dari <b>ikon layar utama</b></li>
+    <li>Login, lalu tekan <b>Aktifkan</b> pada notifikasi yang muncul</li>
+  </ol>
+  <div class="tip">
+    <b>Penting:</b> selalu buka lewat ikon di layar utama, jangan lewat Safari — supaya notifikasi tetap masuk.
+  </div>
+</div>
+
+<!-- DESKTOP -->
+<div class="card hide" id="kartuDesktop">
+  <h2><span class="ikon">💻</span> Untuk Komputer</h2>
+  <p>Tidak perlu memasang apa pun. Cukup buka lewat browser.</p>
+  <a class="btn" href="/dashboard">Buka Montera</a>
+</div>
+
+<div class="lain" id="tampilSemua">Tampilkan semua cara pemasangan</div>
+
+<script>
+(function(){
+  var ua = navigator.userAgent || '';
+  var ios = /iPad|iPhone|iPod/.test(ua) || (ua.indexOf('Mac') >= 0 && 'ontouchend' in document);
+  var android = /Android/i.test(ua);
+
+  if (android)      document.getElementById('kartuAndroid').classList.remove('hide');
+  else if (ios)     document.getElementById('kartuIos').classList.remove('hide');
+  else              document.getElementById('kartuDesktop').classList.remove('hide');
+
+  document.getElementById('tampilSemua').addEventListener('click', function(){
+    ['kartuAndroid','kartuIos','kartuDesktop'].forEach(function(id){
+      document.getElementById(id).classList.remove('hide');
+    });
+    this.style.display = 'none';
+  });
+})();
+</script>
+
+</body>
+</html>

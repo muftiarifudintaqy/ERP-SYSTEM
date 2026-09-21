@@ -1,0 +1,184 @@
+/* ====== TABEL HPP — RAPI ====== */
+.hpp-wrap { overflow-x: auto; }
+.hpp-wrap table { min-width: 1080px; }
+
+/* kolom produk: lebar tetap, nama panjang dipotong rapi */
+.hpp-wrap td.col-produk {
+  max-width: 340px; min-width: 260px;
+  white-space: normal !important;
+  line-height: 1.35; font-size: .86rem;
+}
+.hpp-wrap td.col-produk .sku-badge {
+  display: inline-block; background: #eef1fa; color: #4b3fa7;
+  font-size: .7rem; font-weight: 600; padding: 1px 7px;
+  border-radius: 5px; margin-right: 6px;
+}
+
+/* header */
+.hpp-wrap thead th {
+  background: #f7f8fc !important; font-size: .8rem; font-weight: 600;
+  color: #3a3f5e; vertical-align: middle !important;
+  border-bottom: 2px solid #e5e8f0 !important; white-space: nowrap;
+}
+.hpp-wrap thead th small { display: block; font-weight: 400; font-size: .68rem; color: #8a90a6; }
+
+/* angka rata kanan */
+.hpp-wrap .num { text-align: right !important; white-space: nowrap; }
+.hpp-wrap tbody td { vertical-align: middle !important; }
+
+/* input HPP */
+.hpp-input {
+  min-width: 120px !important; text-align: right !important;
+  font-weight: 600 !important; padding-right: 10px !important;
+}
+.hpp-input::-webkit-outer-spin-button,
+.hpp-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.hpp-input { -moz-appearance: textfield; }
+td .input-group-sm > .input-group-text {
+  background: #f3f4f8; border-right: 0; font-size: .78rem; color: #6b7280; padding: 0 .6rem;
+}
+td .input-group-sm > .hpp-input { border-left: 0; }
+.hpp-input.border-warning { background: #fffbeb !important; border-color: #f0b429 !important; }
+.hpp-note { min-width: 160px !important; font-size: .82rem !important; }
+.btn-riwayat { border-radius: 8px; }
+
+/* baris belum diisi HPP */
+tr.belum-hpp { background: #fffdf6 !important; }
+
+/* ====== Rp + input SEJAJAR, tidak turun baris ====== */
+.hpp-wrap td .input-group,
+td .input-group.input-group-sm {
+  flex-wrap: nowrap !important;
+  width: 165px !important;
+  min-width: 165px !important;
+  max-width: 165px !important;
+  display: flex !important;
+  align-items: stretch !important;
+}
+td .input-group-sm > .input-group-text {
+  flex: 0 0 34px !important;
+  width: 34px !important;
+  justify-content: center !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  height: 32px !important;
+  margin: 0 !important;
+}
+td .input-group-sm > .hpp-input {
+  flex: 1 1 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: 32px !important;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  margin: 0 !important;
+}
+
+/* lebar kolom konsisten */
+.hpp-wrap th:nth-last-child(4),
+.hpp-wrap td:nth-last-child(4) { width: 175px !important; }
+.hpp-wrap .hpp-note { width: 165px !important; min-width: 165px !important; height: 32px !important; }
+
+/* baris tidak melar */
+.hpp-wrap tbody tr { height: 52px !important; }
+.hpp-wrap tbody td { padding: .45rem .6rem !important; }
+
+/* ====== SAMAKAN TINGGI: Rp + input + alasan + tombol riwayat ====== */
+td .input-group.input-group-sm,
+td .input-group-sm > .input-group-text,
+td .input-group-sm > .hpp-input,
+.hpp-wrap .hpp-note,
+.hpp-wrap .btn-riwayat {
+  height: 40px !important;
+  min-height: 40px !important;
+  line-height: 1 !important;
+  font-size: .85rem !important;
+  box-sizing: border-box !important;
+}
+td .input-group-sm > .input-group-text {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 10px !important;
+}
+td .input-group-sm > .hpp-input,
+.hpp-wrap .hpp-note {
+  padding: 0 10px !important;
+}
+.hpp-wrap .btn-riwayat {
+  width: 40px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+}
+
+/* lebar seragam */
+td .input-group.input-group-sm { width: 175px !important; min-width: 175px !important; max-width: 175px !important; }
+.hpp-wrap .hpp-note { width: 175px !important; min-width: 175px !important; max-width: 175px !important; }
+
+/* tinggi baris konsisten */
+.hpp-wrap tbody tr { height: 58px !important; }
+.hpp-wrap tbody td { padding: 8px 12px !important; vertical-align: middle !important; }
+
+/* ====== TEKS DI TENGAH KOTAK (vertikal) ====== */
+td .input-group-sm > .hpp-input,
+.hpp-wrap .hpp-note {
+  line-height: 40px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  display: block !important;
+}
+td .input-group-sm > .hpp-input {
+  padding-right: 12px !important;
+  padding-left: 8px !important;
+}
+.hpp-wrap .hpp-note { padding-left: 12px !important; }
+
+td .input-group-sm > .input-group-text {
+  line-height: 40px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* angka Qty / Total HPP / % juga rata tengah vertikal */
+.hpp-wrap tbody td.num,
+.hpp-wrap tbody td { vertical-align: middle !important; }
+
+/* ====== KOTAK ISIAN SEJAJAR DENGAN BARIS ====== */
+.hpp-wrap tbody td {
+  height: 58px !important;
+  padding: 0 12px !important;
+  vertical-align: middle !important;
+}
+
+/* semua isian dibungkus flex agar benar-benar di tengah sel */
+.hpp-wrap tbody td > .input-group,
+.hpp-wrap tbody td > .hpp-note,
+.hpp-wrap tbody td > .btn-riwayat {
+  margin: 0 !important;
+  vertical-align: middle !important;
+}
+
+.hpp-wrap tbody td:has(> .input-group),
+.hpp-wrap tbody td:has(> .hpp-note),
+.hpp-wrap tbody td:has(> .btn-riwayat) {
+  display: table-cell !important;
+}
+
+/* tinggi kotak seragam 40px, teks center */
+td .input-group.input-group-sm { height: 40px !important; }
+td .input-group-sm > .input-group-text,
+td .input-group-sm > .hpp-input,
+.hpp-wrap .hpp-note,
+.hpp-wrap .btn-riwayat {
+  height: 40px !important;
+  min-height: 40px !important;
+  line-height: 38px !important;
+  vertical-align: middle !important;
+}
+
+/* hilangkan bayangan yang bikin terlihat miring */
+td .input-group-sm > .hpp-input,
+.hpp-wrap .hpp-note,
+.hpp-wrap .btn-riwayat { box-shadow: none !important; }
+.hpp-wrap tbody td > * { position: relative !important; top: 0 !important; }
