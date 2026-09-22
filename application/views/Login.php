@@ -320,3 +320,44 @@
 </body>
 
 </html>
+
+<?php if (($_GET['akun'] ?? '') === 'ditolak'): ?>
+<div id="msgTolak" style="position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(25,0,0,.9);overflow:hidden">
+  <div id="msgTolakKartu" style="position:relative;z-index:2;max-width:400px;width:88%;background:#fff;border-radius:20px;padding:34px 24px 26px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6)">
+    <div id="msgHati" style="font-size:72px;line-height:1">&#128148;</div>
+    <div id="msgStempel" style="display:inline-block;margin-top:16px;padding:6px 22px;border:5px solid #dc2626;border-radius:10px;color:#dc2626;font-weight:900;font-size:2.2rem;letter-spacing:.15em;opacity:0">DITOLAK</div>
+    <h3 style="margin:20px 0 6px;font-weight:800;color:#0f172a">Yahh... pendaftaranmu ditolak &#128524;</h3>
+    <p style="margin:0;color:#64748b;line-height:1.55">Nice try. Admin tidak menyetujui akun ini, jadi akunnya sudah dihapus.<br>Kalau kamu memang karyawan Montera, hubungi HRD ya.</p>
+    <button id="msgTolakTutup" style="margin-top:22px;padding:11px 28px;border:0;border-radius:999px;background:#0f172a;color:#fff;font-weight:700;cursor:pointer">Oke deh &#128532;</button>
+  </div>
+</div>
+<script>
+(function(){
+  if (history.replaceState) history.replaceState(null, '', location.pathname);
+  var lapis=document.getElementById('msgTolak');
+  document.getElementById('msgStempel').animate(
+    [{transform:'rotate(-12deg) scale(4)',opacity:0},{transform:'rotate(-12deg) scale(.9)',opacity:1,offset:.75},{transform:'rotate(-12deg) scale(1)',opacity:1}],
+    {duration:500,delay:700,easing:'cubic-bezier(.5,0,.75,0)',fill:'forwards'});
+  setTimeout(function(){
+    document.getElementById('msgTolakKartu').animate(
+      [{transform:'translateX(0)'},{transform:'translateX(-16px)'},{transform:'translateX(13px)'},{transform:'translateX(-9px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],
+      {duration:450});
+  }, 1150);
+  document.getElementById('msgHati').animate(
+    [{transform:'scale(1)'},{transform:'scale(1.3)'},{transform:'scale(.85) rotate(-10deg)'},{transform:'scale(1) rotate(0)'}],
+    {duration:900,iterations:2});
+  var emoji=['\uD83D\uDE22','\uD83D\uDC94','\uD83D\uDE2D'];
+  for(var i=0;i<28;i++){
+    var e=document.createElement('div');
+    e.textContent=emoji[i%3];
+    e.style.cssText='position:absolute;top:-40px;left:'+(Math.random()*100)+'%;font-size:'+(18+Math.random()*18)+'px;opacity:.75;z-index:1;pointer-events:none';
+    lapis.appendChild(e);
+    e.animate([{transform:'translateY(0)'},{transform:'translateY('+(window.innerHeight+80)+'px)'}],
+              {duration:4000+Math.random()*3000,delay:Math.random()*3000,iterations:Infinity});
+  }
+  document.getElementById('msgTolakTutup').onclick=function(){
+    lapis.animate([{opacity:1},{opacity:0}],{duration:400,fill:'forwards'}).onfinish=function(){lapis.remove();};
+  };
+})();
+</script>
+<?php endif; ?>

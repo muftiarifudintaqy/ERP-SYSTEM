@@ -29,6 +29,21 @@ class Auth extends CI_Controller
         $this->load->view('Template', $data);
     }
 
+    /** Dipakai halaman "Menunggu persetujuan" untuk tahu keputusan admin tanpa muat ulang. */
+    public function status_akun()
+    {
+        header('Content-Type: application/json');
+        $uid = (int) ($_SESSION['user']['id'] ?? 0);
+        if (!$uid) { echo json_encode(['status' => 'keluar']); return; }
+        $u = $this->db->select('disetujui')->where('id', $uid)->get('user')->row_array();
+        if (!$u) {
+            $tolak = $this->db->where('user_id', $uid)->count_all_results('akun_ditolak') > 0;
+            echo json_encode(['status' => $tolak ? 'ditolak' : 'dihapus']);
+            return;
+        }
+        echo json_encode(['status' => ((int) $u['disetujui'] === 0) ? 'menunggu' : 'disetujui']);
+    }
+
     public function signup()
     {
         $data['title'] = 'Sign Up - ' . $this->template->title();
@@ -343,6 +358,10 @@ class Auth extends CI_Controller
             'role' => $guest_role_id,
             'role_text' => $guest_role_display,
             'status' => 'Aktif',
+            // Pendaftar mandiri ditahan sampai developer/HR menyetujui dan
+            // mengatur role serta divisinya -- supaya orang luar atau mantan
+            // karyawan tidak bisa langsung absen dan masuk ke grup WA.
+            'disetujui' => 0,
             'created_at' => date('Y-m-d H:i:s')
             // Note: created_by omitted for self-registration to avoid foreign key issues
         );
@@ -352,7 +371,18 @@ class Auth extends CI_Controller
         
         // Insert user
         if ($this->db->insert('user', $user_data)) {
-            $user_id = $this->db->insert_id();
+            $id_baru = $this->db->insert_id();
+            try {
+                $hp = $this->db->query("SELECT no_hp FROM hrd_karyawan WHERE user_id = 3 LIMIT 1")->row_array();
+                if (!empty($hp['no_hp'])) {
+                    $this->db->query("INSERT IGNORE INTO wa_japri (kode, no_hp, isi) VALUES (?, ?, ?)", [
+                        'daftar-' . $id_baru, $hp['no_hp'],
+                        "Pendaftar baru ERP menunggu persetujuan:\n$full_name ($username, $email)\n\n"
+                        . "Tinjau lalu setujui atau tolak:\nhttps://erp.skinlyfe.id/user/setujui/$id_baru"
+                    ]);
+                }
+            } catch (Throwable $e) { /* pendaftaran tetap berhasil walau WA gagal */ }
+            $user_id = $id_baru;
             
             // Assign role in RBAC system
             $role_assignment = array(

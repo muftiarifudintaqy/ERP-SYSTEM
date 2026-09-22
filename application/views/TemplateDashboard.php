@@ -3443,6 +3443,69 @@ if (!$_SESSION['is_login']) {
 })();
 </script>
 
+<?php
+// Sambutan karyawan baru: tampil sekali, tepat setelah pendaftarannya disetujui
+// (disetujui = 2), lalu ditandai selesai (disetujui = 1).
+$__ci =& get_instance();
+$__uid = (int) ($_SESSION['user']['id'] ?? 0);
+if ($__uid && isset($__ci->db)) {
+    $__baru = $__ci->db->select('full_name, disetujui')->where('id', $__uid)->get('user')->row_array();
+    if ($__baru && (int) $__baru['disetujui'] === 2) {
+        $__ci->db->where('id', $__uid)->update('user', ['disetujui' => 1]);
+        $__nama = htmlspecialchars(strtok(trim($__baru['full_name']), ' ') ?: $__baru['full_name'], ENT_QUOTES, 'UTF-8');
+?>
+<div id="msgSambut" style="position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at center,rgba(31,70,150,.88),rgba(10,10,30,.96));overflow:hidden">
+  <div id="msgSambutKartu" style="position:relative;z-index:2;max-width:420px;width:88%;background:#fff;border-radius:22px;padding:34px 26px 28px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.45);opacity:0">
+    <div class="msg-lompat" style="font-size:64px;line-height:1">&#127881;</div>
+    <div style="margin-top:12px;font-size:.78rem;letter-spacing:.22em;color:#7c3aed;font-weight:800">AKUN DISETUJUI</div>
+    <h2 style="margin:8px 0 8px;font-weight:800;font-size:1.65rem;line-height:1.25;background:linear-gradient(90deg,#1F4696,#7c3aed,#db2777);-webkit-background-clip:text;background-clip:text;color:transparent">Selamat Bergabung, <?= $__nama ?>!</h2>
+    <p style="margin:0;color:#334155;line-height:1.6">Kamu resmi jadi bagian dari tim<br><b>Montera Strategic Group</b> &#128156;</p>
+    <p style="margin:14px 0 0;color:#64748b;font-size:.85rem;line-height:1.5">Langkah pertama: daftarkan wajahmu di menu Absensi, setelah itu kamu sudah bisa absen.</p>
+    <button id="msgSambutTutup" style="margin-top:22px;padding:12px 32px;border:0;border-radius:999px;background:linear-gradient(90deg,#1F4696,#7c3aed);color:#fff;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:0 8px 22px rgba(124,58,237,.45)">Ayo Mulai &#128640;</button>
+  </div>
+</div>
+<style>
+@keyframes msgLompat{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-14px) rotate(-10deg)}75%{transform:translateY(-6px) rotate(10deg)}}
+.msg-lompat{display:inline-block;animation:msgLompat 1.2s ease-in-out infinite}
+</style>
+<script>
+(function(){
+  var lapis=document.getElementById('msgSambut'), kartu=document.getElementById('msgSambutKartu');
+  var warna=['#1F4696','#7c3aed','#db2777','#f59e0b','#10b981','#06b6d4','#ef4444','#facc15'];
+  kartu.animate([{transform:'scale(.3)',opacity:0},{transform:'scale(1.08)',opacity:1,offset:.7},{transform:'scale(1)',opacity:1}],
+                {duration:750,easing:'cubic-bezier(.2,.9,.3,1.3)',fill:'forwards'});
+  function hapus(el){return function(){el.remove();};}
+  function konfeti(n){
+    for(var i=0;i<n;i++){
+      var c=document.createElement('div'), s=6+Math.random()*8;
+      c.style.cssText='position:absolute;top:-20px;left:'+(Math.random()*100)+'%;width:'+s+'px;height:'+(s*1.6)+'px;background:'+warna[i%warna.length]+';border-radius:2px;z-index:1;pointer-events:none';
+      lapis.appendChild(c);
+      c.animate([{transform:'translate(0,0) rotate(0)'},
+                 {transform:'translate('+(Math.random()*200-100)+'px,'+(window.innerHeight+40)+'px) rotate('+(Math.random()*720)+'deg)'}],
+                {duration:2500+Math.random()*2500,delay:Math.random()*1200,easing:'cubic-bezier(.25,.46,.45,.94)'}).onfinish=hapus(c);
+    }
+  }
+  function kembangApi(){
+    var x=10+Math.random()*80, y=8+Math.random()*45, w=warna[Math.floor(Math.random()*warna.length)];
+    for(var i=0;i<28;i++){
+      var p=document.createElement('div'), sudut=Math.PI*2*i/28, jauh=80+Math.random()*80;
+      p.style.cssText='position:absolute;left:'+x+'%;top:'+y+'%;width:6px;height:6px;border-radius:50%;background:'+w+';box-shadow:0 0 10px '+w+';z-index:1;pointer-events:none';
+      lapis.appendChild(p);
+      p.animate([{transform:'translate(0,0) scale(1)',opacity:1},
+                 {transform:'translate('+Math.cos(sudut)*jauh+'px,'+Math.sin(sudut)*jauh+'px) scale(.3)',opacity:0}],
+                {duration:1100+Math.random()*400,easing:'cubic-bezier(.1,.7,.3,1)'}).onfinish=hapus(p);
+    }
+  }
+  konfeti(160);
+  var n=0, t=setInterval(function(){kembangApi(); if(++n%3===0) konfeti(60); if(n>=16) clearInterval(t);},450);
+  document.getElementById('msgSambutTutup').onclick=function(){
+    konfeti(90);
+    lapis.animate([{opacity:1},{opacity:0}],{duration:600,delay:400,fill:'forwards'}).onfinish=function(){lapis.remove();};
+  };
+})();
+</script>
+<?php } } ?>
+
 </body>
 
 </html>

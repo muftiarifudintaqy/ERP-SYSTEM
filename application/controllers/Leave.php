@@ -9,6 +9,43 @@ class Leave extends BaseController
     public function __construct()
     {
         parent::__construct();
+        // Akun yang belum disetujui tidak boleh absen, daftar wajah, atau
+        // mengajukan izin -- halaman-halaman ini terbuka untuk semua user
+        // yang login, jadi penahannya harus di sini, bukan di pengaturan role.
+        $uid_cek = $_SESSION['user']['id'] ?? 0;
+        if ($uid_cek) {
+            $u_cek = $this->db->select('disetujui')->where('id', $uid_cek)->get('user')->row_array();
+            if (!$u_cek) {
+                // Akunnya sudah dihapus tapi sesi login di browser masih hidup
+                // (sesi berlaku setahun). Putus sesinya, jangan biarkan absen.
+                if (isset($this->session)) { $this->session->sess_destroy(); } else { session_destroy(); }
+                if ($this->input->is_ajax_request() || $this->input->method() === 'post') {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'status' => false,
+                                      'message' => 'Akun tidak ditemukan. Silakan login ulang.',
+                                      'msg' => 'Akun tidak ditemukan. Silakan login ulang.']);
+                    exit;
+                }
+                redirect('auth/login');
+                exit;
+            }
+            if ((int) $u_cek['disetujui'] === 0) {
+                $pesan = 'Akun kamu sedang menunggu persetujuan admin. Absen dan izin bisa dipakai setelah akunmu disetujui.';
+                if ($this->input->is_ajax_request() || $this->input->method() === 'post') {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'status' => false, 'message' => $pesan, 'msg' => $pesan]);
+                    exit;
+                }
+                $d = ['user' => $_SESSION['user'], 'title' => 'Menunggu Persetujuan'];
+                $d['content'] = '<div style="max-width:520px;margin:60px auto;background:#fff;border-radius:14px;padding:32px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08)">'
+                              . '<div style="font-size:42px">&#9203;</div>'
+                              . '<h4 style="margin:12px 0 8px;font-weight:700">Menunggu persetujuan</h4>'
+                              . '<p style="color:#64748b;line-height:1.6;margin:0">' . $pesan . '</p></div>' . "<script>setInterval(function(){fetch('/auth/status_akun',{credentials:'same-origin'}).then(function(r){return r.json();}).then(function(o){if(o.status==='disetujui'){location.reload();}else if(o.status==='ditolak'){location.href='/auth/login?akun=ditolak';}else if(o.status==='dihapus'||o.status==='keluar'){location.href='/auth/login';}}).catch(function(){});},15000);</script>";
+                echo $this->load->view('TemplateDashboard', $d, true);
+                exit;
+            }
+        }
+
         $this->load->database();
         $this->load->model('mymodel');
         $this->load->model('Leave_model', 'leave_model');

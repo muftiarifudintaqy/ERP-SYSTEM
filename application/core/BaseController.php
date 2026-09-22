@@ -88,6 +88,28 @@ class BaseController extends CI_Controller
         $this->load->library('permission');
         $this->load->library('template');
         
+        // Akun yang sudah dihapus atau dinonaktifkan harus langsung keluar,
+        // walau sesi login di browsernya masih hidup (sesi berlaku setahun).
+        if (!empty($_SESSION['user']['id'])) {
+            $this->load->database();
+            $akun = $this->db->select('status')->where('id', (int) $_SESSION['user']['id'])
+                             ->get('user')->row_array();
+            if (!$akun || $akun['status'] !== 'Aktif') {
+                $ditolak = !$akun && $this->db->where('user_id', (int) $_SESSION['user']['id'])
+                                             ->count_all_results('akun_ditolak') > 0;
+                if (isset($this->session)) { $this->session->sess_destroy(); } else { session_destroy(); }
+                if ($this->input->is_ajax_request()) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'status' => false,
+                                      'message' => 'Sesi berakhir. Silakan login ulang.',
+                                      'msg' => 'Sesi berakhir. Silakan login ulang.']);
+                    exit;
+                }
+                redirect($ditolak ? 'auth/login?akun=ditolak' : 'auth/login');
+                exit;
+            }
+        }
+
         // Initialize user data
         $this->init_user_data();
         

@@ -25,10 +25,115 @@ class User extends BaseController
             'action' => 'edit',
             'action_process' => 'edit',
             'bulk_delete' => 'delete',
-            'bulk_update_role' => 'edit'
+            'bulk_update_role' => 'edit',
+            'setujui' => 'edit',
+            'setujui_proses' => 'edit',
+            'tolak' => 'delete'
         ]);
     }
     
+    /**
+     * Tinjau pendaftar baru dari tautan japri WA: data pendaftar + tombol
+     * Setujui / Tolak. Membuka tautan saja TIDAK mengubah apa pun, supaya akun
+     * tidak tersetujui karena tersentuh atau dibuka hanya untuk melihat.
+     * Semua alamat ditulis relatif: di belakang Cloudflare base_url() jadi
+     * http://, dan POST ke http:// dialihkan jadi GET -- tombol tidak bekerja.
+     */
+    public function setujui($id = 0)
+    {
+        $u = $this->_pendaftar($id);
+        if (!$u) { $this->_kartu('&#10060;', 'Pendaftar tidak ditemukan', '<p style="color:#64748b">Akun ini sudah ditolak atau dihapus.</p>'); return; }
+        if ((int) $u['disetujui'] >= 1) {
+            $this->_kartu('&#9989;', 'Sudah disetujui', $this->_ringkas($u), $this->_tombol_edit($u['id']));
+            return;
+        }
+        $aksi = '<form method="post" action="/user/setujui_proses/' . (int) $u['id'] . '" style="display:inline">'
+              . '<button type="submit" style="' . $this->_gaya_tombol('#16a34a') . '">Setujui</button></form>'
+              . '<form method="post" action="/user/tolak/' . (int) $u['id'] . '" style="display:inline"'
+              . ' onsubmit="return confirm(\'Tolak dan hapus akun ini beserta semua datanya?\')">'
+              . '<button type="submit" style="' . $this->_gaya_tombol('#dc2626') . '">Tolak</button></form>';
+        $this->_kartu('&#9203;', 'Menunggu persetujuan', $this->_ringkas($u), $aksi);
+    }
+
+    public function setujui_proses($id = 0)
+    {
+        if ($this->input->method() !== 'post') { redirect('/user/setujui/' . (int) $id); return; }
+        $u = $this->_pendaftar($id);
+        if (!$u) { $this->_kartu('&#10060;', 'Pendaftar tidak ditemukan', '<p style="color:#64748b">Akun ini sudah ditolak atau dihapus.</p>'); return; }
+        $this->db->where('id', (int) $u['id'])->update('user', ['disetujui' => 2]);
+        $this->_kartu('&#9989;', 'Disetujui', $this->_ringkas($u)
+            . '<p style="color:#64748b;margin-top:12px">Sekarang sudah bisa daftar wajah, absen, dan mengajukan izin.</p>',
+            $this->_tombol_edit($u['id']));
+    }
+
+    public function tolak($id = 0)
+    {
+        if ($this->input->method() !== 'post') { redirect('/user/setujui/' . (int) $id); return; }
+        $u = $this->_pendaftar($id);
+        if (!$u) { $this->_kartu('&#10060;', 'Pendaftar tidak ditemukan', '<p style="color:#64748b">Akun ini sudah ditolak atau dihapus.</p>'); return; }
+        // Hanya pendaftar yang BELUM disetujui -- akun karyawan aktif tidak
+        // boleh terhapus karena salah klik tautan lama di WA.
+        if ((int) $u['disetujui'] >= 1) {
+            $this->_kartu('&#9888;&#65039;', 'Tidak bisa ditolak', '<p style="color:#64748b">Akun ini sudah disetujui. Hapus lewat menu kelola user kalau memang perlu.</p>');
+            return;
+        }
+        $uid = (int) $u['id'];
+        $this->db->trans_start();
+        // Tabel wajah, perangkat, dan absen tidak dikunci foreign key ke user,
+        // jadi tidak ikut terhapus otomatis -- dihapus satu per satu.
+        foreach (['user_face_descriptors', 'user_devices', 'attendance_punches', 'attendances'] as $t) {
+            $this->db->where('user_id', $uid)->delete($t);
+        }
+        $fk = $this->db->query("SELECT TABLE_NAME, COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE
+                                WHERE TABLE_SCHEMA = DATABASE() AND REFERENCED_TABLE_NAME = 'user'
+                                  AND REFERENCED_COLUMN_NAME = 'id'")->result_array();
+        foreach ($fk as $r) {
+            $this->db->where($r['COLUMN_NAME'], $uid)->delete($r['TABLE_NAME']);
+        }
+        $this->db->where('id', $uid)->delete('user');
+        // Hanya nomor akun yang diingat -- supaya dia masih bisa diberi tahu
+        // bahwa pendaftarannya ditolak. Data pribadinya sudah terhapus di atas.
+        $this->db->query('INSERT IGNORE INTO akun_ditolak (user_id, ditolak_at) VALUES (?, NOW())', [$uid]);
+        $this->db->trans_complete();
+        $this->_kartu('&#128465;&#65039;', 'Ditolak dan dihapus', $this->_ringkas($u)
+            . '<p style="color:#64748b;margin-top:12px">Akun dan semua datanya sudah dihapus. Kalau dia sedang login, sesinya otomatis berakhir.</p>');
+    }
+
+    private function _pendaftar($id)
+    {
+        return $this->db->select('id, full_name, username, email, disetujui, created_at')
+                        ->where('id', (int) $id)->get('user')->row_array();
+    }
+
+    private function _ringkas($u)
+    {
+        $e = function ($t) { return htmlspecialchars((string) $t, ENT_QUOTES, 'UTF-8'); };
+        return '<p style="margin:0;font-weight:600;font-size:1.05rem">' . $e($u['full_name']) . '</p>'
+             . '<p style="margin:2px 0 0;color:#64748b">' . $e($u['username']) . ' &middot; ' . $e($u['email']) . '</p>'
+             . '<p style="margin:2px 0 0;color:#94a3b8;font-size:.85rem">Mendaftar ' . $e($u['created_at']) . '</p>';
+    }
+
+    private function _gaya_tombol($warna)
+    {
+        return "display:inline-block;margin:16px 4px 0;padding:10px 26px;border:0;border-radius:8px;"
+             . "background:$warna;color:#fff;font-weight:600;cursor:pointer;text-decoration:none";
+    }
+
+    private function _tombol_edit($id)
+    {
+        return '<a href="/user/edit_page?id=' . (int) $id . '" style="' . $this->_gaya_tombol('#1F4696') . '">Atur role &amp; divisi</a>';
+    }
+
+    private function _kartu($ikon, $judul, $isi, $aksi = '')
+    {
+        $d = ['user' => $_SESSION['user'], 'title' => $judul];
+        $d['content'] = '<div style="max-width:520px;margin:48px auto;background:#fff;border-radius:14px;padding:32px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08)">'
+            . '<div style="font-size:44px">' . $ikon . '</div>'
+            . '<h4 style="margin:10px 0 14px;font-weight:700">' . $judul . '</h4>'
+            . $isi . '<div>' . $aksi . '</div></div>';
+        $this->load->view('TemplateDashboard', $d);
+    }
+
     function hasDuplicates($arr)
     {
         $counts = array_count_values($arr);
