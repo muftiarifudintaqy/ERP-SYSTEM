@@ -57,7 +57,7 @@ $selected_brand = isset($_GET['brand']) ? $_GET['brand'] : '';
         <div class="col-md-8">
             <div class="report-card">
                 <?php
-                $laba_bersih = (float)$penjualan_bersih - (float)$hpp - (float)$marketplace_fee - (float)$pengeluaran;
+                $laba_bersih = (float)$penjualan_bersih - (float)$hpp - (float)$marketplace_fee - (float)($komisi_afiliasi ?? 0) - (float)($ongkir_sampel ?? 0) - (float)$pengeluaran;
                 ?>
                 <p class="text-secondary fw-bold">
                     Penjualan Bersih
@@ -77,6 +77,20 @@ $selected_brand = isset($_GET['brand']) ? $_GET['brand'] : '';
                     Marketplace Fee
                     <span class="text-danger fw-bold float-end">
                         -<?= number_format((float)$marketplace_fee, 0, ',', '.') ?>
+                    </span>
+                </p>
+
+                <p class="text-secondary fw-bold">
+                    Komisi Afiliasi
+                    <span class="text-danger fw-bold float-end">
+                        -<?= number_format((float)($komisi_afiliasi ?? 0), 0, ',', '.') ?>
+                    </span>
+                </p>
+
+                <p class="text-secondary fw-bold">
+                    Ongkir Sampel Afiliasi
+                    <span class="text-danger fw-bold float-end">
+                        -<?= number_format((float)($ongkir_sampel ?? 0), 0, ',', '.') ?>
                     </span>
                 </p>
 

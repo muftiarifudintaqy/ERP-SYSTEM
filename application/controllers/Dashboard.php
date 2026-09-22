@@ -714,6 +714,10 @@ class Dashboard extends BaseController
         $sql_pengeluaran = $this->hitung_pengeluaran($start_date, $until_date, $brand_filter);
         $data['pengeluaran'] = $sql_pengeluaran['text'];
 
+        $afiliasi = $this->hitung_biaya_afiliasi($start_date, $until_date, $brand_filter);
+        $data['komisi_afiliasi'] = $afiliasi['komisi_afiliasi'];
+        $data['ongkir_sampel']   = $afiliasi['ongkir_sampel'];
+
         $query = $this->mymodel->selectWithQuery("SELECT * FROM brand WHERE status = 'ENABLE' ORDER BY name ASC");
         $data['brands'] = $query;
 
@@ -787,6 +791,7 @@ class Dashboard extends BaseController
 
         $pengeluaran_data = $this->hitung_pengeluaran($start_date, $until_date, $brand_filter);
         $pengeluaran = $pengeluaran_data['text'] ?? 0;
+        $afiliasi = $this->hitung_biaya_afiliasi($start_date, $until_date, $brand_filter);
 
         $this->output
             ->set_content_type('application/json')
@@ -794,8 +799,38 @@ class Dashboard extends BaseController
                 'penjualan_bersih' => $penjualan_bersih,
                 'hpp' => $hpp,
                 'marketplace_fee' => $marketplace_fee,
-                'pengeluaran' => $pengeluaran
+                'pengeluaran' => $pengeluaran,
+                'komisi_afiliasi' => $afiliasi['komisi_afiliasi'],
+                'ongkir_sampel' => $afiliasi['ongkir_sampel']
             ]));
+    }
+
+    /**
+     * Biaya program afiliasi yang dipotong langsung oleh marketplace.
+     *
+     * Komisi afiliasi: diambil dari data pencairan TikTok per order.
+     * Ongkir sampel: order sampel gratis ke kreator punya omzet nol dan
+     * dana cair negatif -- negatif itu ongkir yang ditanggung toko.
+     * Keduanya tidak ada di biaya marketplace maupun pengeluaran (yang
+     * isinya iklan, KOL, dan tabel expense), jadi selama ini tidak
+     * mengurangi laba sama sekali.
+     */
+    function hitung_biaya_afiliasi($start_date, $until_date, $brand_filter)
+    {
+        $sql = "SELECT COALESCE(SUM(komisi_afiliasi), 0) AS komisi,
+                       COALESCE(SUM(CASE WHEN omset_bersih = 0 AND dana_pencairan < 0
+                                         THEN -dana_pencairan ELSE 0 END), 0) AS ongkir_sampel
+                FROM transaction
+                WHERE DATE(date) BETWEEN ? AND ?
+                  AND type_sub = 'POS'
+                  AND order_status NOT IN ('RETURN','REFUND','CANCELLED','IN_CANCELLED','UNPAID')";
+        $bind = [$start_date, $until_date];
+        if (!empty($brand_filter)) { $sql .= " AND brand = ?"; $bind[] = $brand_filter; }
+        $r = $this->db->query($sql, $bind)->row_array();
+        return [
+            'komisi_afiliasi' => (float) ($r['komisi'] ?? 0),
+            'ongkir_sampel'   => (float) ($r['ongkir_sampel'] ?? 0),
+        ];
     }
 
     function hitung_pengeluaran($start_date, $until_date, $brand_filter)

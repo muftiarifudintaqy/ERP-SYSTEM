@@ -13,9 +13,66 @@ class Product extends BaseController
         // AJAX methods for status updates require AJAX permission check
         $this->set_method_permissions([
             'update_status' => 'edit',
-            'update_status_bulk' => 'edit'
+            'update_status_bulk' => 'edit',
+            'sku_peta_simpan' => 'edit'
         ]);
     }
+    /**
+     * Petakan SKU marketplace ke SKU resmi, lalu langsung isi ulang HPP
+     * untuk order yang memakainya. SKU tujuan boleh berupa pola bundel
+     * (1FS+1NS); baris produknya dibuat otomatis kalau semua komponen
+     * punya harga beli.
+     */
+    /** Halaman SKU yang terjual tapi tidak masuk HPP. */
+    public function sku_belum()
+    {
+        $this->load->library('sku_pemecah');
+        $data['user']   = $_SESSION['user'];
+        $data['title']  = 'SKU Belum Dikenali - ' . $this->template->title();
+        $data['rows']   = $this->sku_pemecah->belum_dikenali();
+        $data['produk'] = $this->db->query(
+            "SELECT brand, sku, name, price_buy FROM product WHERE is_varian = 0 ORDER BY brand, sku"
+        )->result_array();
+        $data['content'] = $this->load->view('product/sku_belum', $data, true);
+        $this->load->view('TemplateDashboard', $data);
+    }
+
+    public function sku_peta_simpan()
+    {
+        header('Content-Type: application/json');
+        $this->load->library('sku_pemecah');
+
+        $brand  = trim((string) $this->input->post('brand'));
+        $sku_mp = (string) $this->input->post('sku_marketplace');
+        $target = trim((string) $this->input->post('sku_internal'));
+
+        if ($brand === '' || trim($sku_mp) === '' || $target === '') {
+            echo json_encode(['success' => false, 'message' => 'Brand, SKU marketplace, dan SKU tujuan wajib diisi.']);
+            return;
+        }
+
+        list($ok, $hasil) = $this->sku_pemecah->pastikan_produk($brand, $target);
+        if (!$ok) { echo json_encode(['success' => false, 'message' => $hasil]); return; }
+
+        $mps = $this->db->query(
+            "SELECT DISTINCT marketplace FROM stock_product_3rd WHERE brand = ? AND sku = ?",
+            [$brand, $sku_mp])->result_array();
+        foreach ($mps as $mp) {
+            $this->db->where('marketplace', $mp['marketplace'])
+                     ->where('sku_marketplace', $sku_mp)->delete('sku_mapping');
+            $this->db->insert('sku_mapping', [
+                'marketplace'     => $mp['marketplace'],
+                'sku_marketplace' => $sku_mp,
+                'sku_internal'    => $hasil,
+                'created_at'      => date('Y-m-d H:i:s'),
+            ]);
+        }
+
+        $baru = $this->sku_pemecah->isi_ulang_stock($brand, $sku_mp);
+        echo json_encode(['success' => true,
+            'message' => "Dipetakan ke $hasil. $baru baris order sekarang masuk HPP."]);
+    }
+
     public function index()
     {
         $data['user'] = $_SESSION['user'];

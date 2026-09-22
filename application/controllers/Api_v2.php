@@ -12595,7 +12595,12 @@ class Api_v2 extends CI_Controller
                 'msg' => '',
             ];
 
-            $trx = $this->mymodel->selectWithQuery("SELECT id, shop_id, kebutuhan FROM transaction WHERE order_id = " . $this->db->escape($order_id) . " AND marketplace = 'TIKTOK' AND UPPER(kebutuhan) = 'AFFILIATE' LIMIT 1");
+            $trx = $this->mymodel->selectWithQuery("SELECT id, shop_id, kebutuhan FROM transaction WHERE order_id = " . $this->db->escape($order_id) . " AND marketplace = 'TIKTOK'"
+                // semua=1: ambil biaya untuk order apa pun, bukan hanya afiliasi.
+                // Dipakai putaran malam untuk order yang biaya marketplace-nya
+                // masih nol. Tanpa saklar ini perilakunya tetap seperti semula.
+                . (empty($params['semua']) ? " AND UPPER(kebutuhan) = 'AFFILIATE'" : "")
+                . " LIMIT 1");
             $trx = isset($trx[0]) ? $trx[0] : [];
             $shop_id = $shop_id_param;
             if (empty($shop_id) && !empty($trx['shop_id'])) {

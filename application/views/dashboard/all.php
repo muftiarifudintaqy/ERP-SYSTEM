@@ -1792,7 +1792,9 @@ if ($_GET['type'] == "Yearly") {
                                     const hpp = Math.round(parseFloat(data.hpp)) || 0;
                                     const marketplaceFee = Math.round(parseFloat(data.marketplace_fee)) || 0;
                                     const pengeluaran = Math.round(parseFloat(data.pengeluaran)) || 0;
-                                    const labaBersih = penjualanBersih - hpp - marketplaceFee - pengeluaran;
+                                    const komisiAfiliasi = Math.round(parseFloat(data.komisi_afiliasi)) || 0;
+                                    const ongkirSampel = Math.round(parseFloat(data.ongkir_sampel)) || 0;
+                                    const labaBersih = penjualanBersih - hpp - marketplaceFee - komisiAfiliasi - ongkirSampel - pengeluaran;
 
                                     const tooltipContent = `
                                     <div class="report-card p-2" style="min-width: 300px; line-height: 1.5; font-size: 13px;">
@@ -1807,6 +1809,14 @@ if ($_GET['type'] == "Yearly") {
                                         <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                                             <span class="text-secondary fw-bold">Marketplace Fee</span>
                                             <span class="text-danger fw-bold">-${formatCurrency(marketplaceFee)}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                            <span class="text-secondary fw-bold">Komisi Afiliasi</span>
+                                            <span class="text-danger fw-bold">-${formatCurrency(komisiAfiliasi)}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                            <span class="text-secondary fw-bold">Ongkir Sampel Afiliasi</span>
+                                            <span class="text-danger fw-bold">-${formatCurrency(ongkirSampel)}</span>
                                         </div>
                                         <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                                             <span class="text-secondary fw-bold">Pengeluaran</span>
