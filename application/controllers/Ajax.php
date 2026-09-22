@@ -8419,7 +8419,22 @@ gradient_6.addColorStop(0.75, "rgba(225, 225, 225, 0)")
 			$grand_total_hpp = $this->getCachedHPPCalculations($start_date, $until_date, $qry_stock);
 
 			// Calculate net profit
-			$net_profit = intval($net_sales_after_fee_value) - intval($total_spending) - intval($grand_total_hpp);
+			// Komisi afiliasi dan ongkir sampel afiliasi: dipotong langsung oleh
+			// marketplace, tidak termasuk biaya marketplace maupun pengeluaran.
+			// Rumusnya sama dengan Dashboard::hitung_biaya_afiliasi supaya angka
+			// kartu ini sama dengan tooltip dan halaman Laporan Laba Bersih.
+			$biaya_afiliasi = $this->mymodel->selectWithQuery("
+				SELECT COALESCE(SUM(komisi_afiliasi), 0) AS komisi,
+				       COALESCE(SUM(CASE WHEN omset_bersih = 0 AND dana_pencairan < 0
+				                         THEN -dana_pencairan ELSE 0 END), 0) AS ongkir
+				FROM transaction
+				WHERE DATE(date) BETWEEN '$start_date' AND '$until_date'
+				AND type_sub = 'POS'
+				AND order_status NOT IN ('RETURN','REFUND','CANCELLED','IN_CANCELLED','UNPAID') $qry
+			");
+			$total_afiliasi = intval($biaya_afiliasi[0]['komisi'] ?? 0) + intval($biaya_afiliasi[0]['ongkir'] ?? 0);
+
+			$net_profit = intval($net_sales_after_fee_value) - intval($total_spending) - intval($grand_total_hpp) - $total_afiliasi;
 			$text = $this->template->separator_only($net_profit);
 
 			// Use cached net sales for percentage calculation
