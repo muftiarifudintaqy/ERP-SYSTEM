@@ -7152,6 +7152,12 @@ class Api_v2 extends CI_Controller
         // asli terbukti lolos semua, kiriman yang gagal akan ditolak.
         if ($dt['marketplace'] === 'SHOPEE') {
             $dt['ttd_valid'] = $this->shopee_push_ttd_valid($dt['input']) ? 1 : 0;
+            if ($dt['ttd_valid'] === 0) {
+                // Tanda tangan tidak cocok: bukan dari Shopee. Tolak, jangan disimpan.
+                http_response_code(401);
+                echo json_encode(['status' => false, 'msg' => 'Tanda tangan tidak valid.']);
+                return;
+            }
         }
 
         $json = json_decode($dt['input'], true);
