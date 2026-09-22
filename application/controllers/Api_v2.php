@@ -7074,10 +7074,9 @@ class Api_v2 extends CI_Controller
     /** Periksa tanda tangan push Shopee di header Authorization. */
     private function shopee_push_ttd_valid($body)
     {
-        $row = $this->db->select('val')->where('opt', 'shopee')->where('status', 'Aktif')
-                        ->limit(1)->get('marketplace_config')->row_array();
-        $cfg = json_decode($row['val'] ?? '', true);
-        $kunci = $cfg['partner_key'] ?? '';
+        // Push ditandatangani dengan "Live Push Partner Key" dari konsol Shopee
+        // (menu Push Mechanism) -- berbeda dari partner key untuk memanggil API.
+        $kunci = function_exists('app_env') ? (string) app_env('SHOPEE_PUSH_KEY') : (string) getenv('SHOPEE_PUSH_KEY');
         if ($kunci === '') return false;
 
         $dapat = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
