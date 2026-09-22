@@ -243,6 +243,9 @@
                         <a href="#!" onclick="sync_data('<?= $start_date ?>','<?= $until_date ?>')" class="btn btn-outline-secondary">
                             <i class="bi bi-cloud-download me-1"></i> Sync Data
                         </a>
+                        <a href="<?= base_url() ?>product/sku_belum" class="btn btn-outline-warning">
+                            <i class="bi bi-exclamation-triangle me-1"></i> SKU Belum Dikenali
+                        </a>
                         <a href="#!" onclick="create()" class="btn btn-primary">
                             <i class="bi bi-plus me-1"></i> Tambah Data
                         </a>

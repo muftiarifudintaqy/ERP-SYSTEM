@@ -20,6 +20,8 @@
   .skub .kosong{text-align:center;color:#64748b;padding:40px 0}
 </style>
 
+<?php $this->load->view('operasional/menu'); ?>
+
 <div class="skub">
   <h4>SKU belum dikenali</h4>
   <p class="ket">
