@@ -7071,6 +7071,57 @@ class Api_v2 extends CI_Controller
         echo json_encode($html, true);
         die;
     }
+    /** Periksa tanda tangan push Shopee di header Authorization. */
+    private function shopee_push_ttd_valid($body)
+    {
+        $row = $this->db->select('val')->where('opt', 'shopee')->where('status', 'Aktif')
+                        ->limit(1)->get('marketplace_config')->row_array();
+        $cfg = json_decode($row['val'] ?? '', true);
+        $kunci = $cfg['partner_key'] ?? '';
+        if ($kunci === '') return false;
+
+        $dapat = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+        if ($dapat === '' && function_exists('getallheaders')) {
+            foreach (getallheaders() as $k => $v) {
+                if (strtolower($k) === 'authorization') { $dapat = $v; break; }
+            }
+        }
+        // Alamat publik ditulis tetap: di belakang Cloudflare Tunnel server
+        // melihat http dan host lokal, padahal Shopee menandatangani alamat publik.
+        $url = 'https://erp.skinlyfe.id' . $_SERVER['REQUEST_URI'];
+        $harap = hash_hmac('sha256', $url . '|' . $body, $kunci);
+        return $dapat !== '' && hash_equals($harap, $dapat);
+    }
+
+    /**
+     * Proses antrean push Shopee: tarik ulang detail tiap order dari API Shopee.
+     * Terpisah dari marketplace_webhook_refresh, yang mendahulukan puluhan ribu
+     * order TikTok sehingga antrean ini tidak akan pernah tersentuh.
+     */
+    public function webhook_proses()
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        $antre = $this->db->query("
+            SELECT order_id, MAX(shop_id) AS shop_id, GROUP_CONCAT(id) AS ids
+            FROM webhook
+            WHERE marketplace = 'SHOPEE' AND order_id <> '' AND order_date = ''
+            GROUP BY order_id ORDER BY MIN(id) LIMIT 40")->result_array();
+
+        $hasil = 0;
+        foreach ($antre as $r) {
+            $url = 'http://127.0.0.1:8090/api/marketplace/order/detail?marketplace=SHOPEE&mode=webhook'
+                 . '&shop_id=' . rawurlencode($r['shop_id']) . '&order_id=' . rawurlencode($r['order_id']);
+            $c = curl_init($url);
+            curl_setopt_array($c, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 30]);
+            curl_exec($c);
+            curl_close($c);
+            $this->db->query("UPDATE webhook SET order_date = ? WHERE FIND_IN_SET(id, ?)",
+                             [date('Y-m-d H:i:s'), $r['ids']]);
+            $hasil++;
+        }
+        echo json_encode(['status' => true, 'diproses' => $hasil]);
+    }
+
     public function webhook()
     {
         date_default_timezone_set('Asia/Jakarta');
@@ -7083,6 +7134,13 @@ class Api_v2 extends CI_Controller
         $dt['method'] = strval($_SERVER['REQUEST_METHOD']);
         $dt['created_at'] = DATE("Y-m-d H:i:s");
         $dt['is_live'] = 'true';
+
+        // Push Shopee ditandatangani: HMAC-SHA256(url|body, partner_key).
+        // Sementara hanya dicatat (ttd_valid), belum ditolak -- setelah push
+        // asli terbukti lolos semua, kiriman yang gagal akan ditolak.
+        if ($dt['marketplace'] === 'SHOPEE') {
+            $dt['ttd_valid'] = $this->shopee_push_ttd_valid($dt['input']) ? 1 : 0;
+        }
 
         $json = json_decode($dt['input'], true);
 
