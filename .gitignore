@@ -38,4 +38,5 @@
 .DS_Store
 install/*.apk
 .env*
-/assets/img/user/
+/assets/img/user/*
+!/assets/img/user/default.png
