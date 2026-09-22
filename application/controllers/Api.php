@@ -4104,6 +4104,15 @@ class Api extends CI_Controller
 
     public function auth_shopee()
     {
+        // Otorisasi toko hanya boleh dimulai dan diterima oleh pengguna ERP
+        // yang sedang login. Tanpa ini siapa pun yang tahu alamatnya bisa
+        // menyetujui aplikasi dengan toko Shopee miliknya sendiri, dan
+        // konfigurasi toko Skinlyfe/Prepare tertimpa -- sinkron order berhenti.
+        if (empty($_SESSION['user']['id'])) {
+            redirect(base_url('auth/login'));
+            return;
+        }
+
 
         $brand = $_SESSION['brand'];
         $dt = $_GET;
@@ -4373,12 +4382,22 @@ class Api extends CI_Controller
     }
     public function auth_marketplace_shopee()
     {
+        // Otorisasi toko hanya boleh dimulai dan diterima oleh pengguna ERP
+        // yang sedang login. Tanpa ini siapa pun yang tahu alamatnya bisa
+        // menyetujui aplikasi dengan toko Shopee miliknya sendiri, dan
+        // konfigurasi toko Skinlyfe/Prepare tertimpa -- sinkron order berhenti.
+        if (empty($_SESSION['user']['id'])) {
+            redirect(base_url('auth/login'));
+            return;
+        }
+
 
         $brand = $_GET['brand'];
 
         $_SESSION['brand'] = $brand;
 
-        $config = $this->mymodel->selectWithQuery("SELECT val FROM marketplace_config WHERE opt = 'shopee' AND brand = '$brand' ");
+        $config = $this->mymodel->selectWithQuery("SELECT val FROM marketplace_config WHERE opt = 'shopee' AND brand = " . $this->db->escape($brand));
+        if (empty($config)) { show_404(); return; }
         $config = $config[0];
         $config = json_decode($config['val'], true);
 
