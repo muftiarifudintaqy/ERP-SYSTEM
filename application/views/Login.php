@@ -361,3 +361,39 @@
 })();
 </script>
 <?php endif; ?>
+
+<?php if (($_GET['akun'] ?? '') === 'dikeluarkan'): ?>
+<div id="msgPamit" style="position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#0f1b3d,#1F4696 55%,#3b2a6b);overflow:hidden;opacity:0">
+  <div id="msgPamitKartu" style="position:relative;z-index:2;max-width:430px;width:88%;background:rgba(255,255,255,.97);border-radius:22px;padding:36px 28px 28px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.4);opacity:0">
+    <div id="msgLambai" style="font-size:64px;line-height:1;display:inline-block;transform-origin:70% 70%">&#128075;</div>
+    <h3 style="margin:16px 0 10px;font-weight:800;color:#1F4696">Terima kasih</h3>
+    <p style="margin:0;color:#334155;line-height:1.65">Akun Anda telah dihapus oleh admin karena Anda sudah tidak lagi menjadi bagian dari tim <b>Montera</b>.</p>
+    <p style="margin:12px 0 0;color:#475569;line-height:1.65">Terima kasih atas partisipasi dan kontribusi Anda selama bersama kami. Semoga sukses di langkah berikutnya.</p>
+    <p style="margin:18px 0 0;color:#1F4696;font-weight:700;letter-spacing:.02em">Salam hangat,<br>Montera Strategic Group &#128156;</p>
+    <button id="msgPamitTutup" style="margin-top:22px;padding:11px 30px;border:0;border-radius:999px;background:#1F4696;color:#fff;font-weight:700;cursor:pointer">Tutup</button>
+  </div>
+</div>
+<script>
+(function(){
+  if (history.replaceState) history.replaceState(null, '', location.pathname);
+  var lapis=document.getElementById('msgPamit');
+  lapis.animate([{opacity:0},{opacity:1}],{duration:900,fill:'forwards'});
+  document.getElementById('msgPamitKartu').animate(
+    [{transform:'translateY(40px)',opacity:0},{transform:'translateY(0)',opacity:1}],
+    {duration:1100,delay:500,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});
+  document.getElementById('msgLambai').animate(
+    [{transform:'rotate(0)'},{transform:'rotate(18deg)'},{transform:'rotate(-10deg)'},{transform:'rotate(16deg)'},{transform:'rotate(-6deg)'},{transform:'rotate(0)'}],
+    {duration:1600,delay:1200,iterations:3});
+  for(var i=0;i<34;i++){
+    var b=document.createElement('div'), s=2+Math.random()*4;
+    b.style.cssText='position:absolute;bottom:-10px;left:'+(Math.random()*100)+'%;width:'+s+'px;height:'+s+'px;border-radius:50%;background:#fff;box-shadow:0 0 8px rgba(255,255,255,.9);z-index:1;pointer-events:none';
+    lapis.appendChild(b);
+    b.animate([{transform:'translateY(0)',opacity:0},{opacity:.9,offset:.2},{transform:'translateY(-'+(window.innerHeight+40)+'px)',opacity:0}],
+              {duration:7000+Math.random()*6000,delay:Math.random()*6000,iterations:Infinity,easing:'linear'});
+  }
+  document.getElementById('msgPamitTutup').onclick=function(){
+    lapis.animate([{opacity:1},{opacity:0}],{duration:600,fill:'forwards'}).onfinish=function(){lapis.remove();};
+  };
+})();
+</script>
+<?php endif; ?>

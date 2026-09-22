@@ -7088,7 +7088,10 @@ class Api_v2 extends CI_Controller
         }
         // Alamat publik ditulis tetap: di belakang Cloudflare Tunnel server
         // melihat http dan host lokal, padahal Shopee menandatangani alamat publik.
-        $url = 'https://erp.skinlyfe.id' . $_SERVER['REQUEST_URI'];
+        // Push bisa masuk lewat erp.skinlyfe.id (Cloudflare) atau lewat pintu
+        // khusus webhook (proxy Apache, mengirim X-Forwarded-Host).
+        $host = $_SERVER['HTTP_X_FORWARDED_HOST'] ?? 'erp.skinlyfe.id';
+        $url = 'https://' . $host . $_SERVER['REQUEST_URI'];
         $harap = hash_hmac('sha256', $url . '|' . $body, $kunci);
         return $dapat !== '' && hash_equals($harap, $dapat);
     }
@@ -7120,6 +7123,16 @@ class Api_v2 extends CI_Controller
             $hasil++;
         }
         echo json_encode(['status' => true, 'diproses' => $hasil]);
+    }
+
+    /**
+     * Alamat push Shopee tanpa parameter (?marketplace=...) -- konsol Shopee
+     * menolak alamat callback yang memuat parameter. Isinya sama dengan webhook().
+     */
+    public function webhook_shopee()
+    {
+        $_GET['marketplace'] = 'SHOPEE';
+        return $this->webhook();
     }
 
     public function webhook()

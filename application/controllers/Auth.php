@@ -34,11 +34,15 @@ class Auth extends CI_Controller
     {
         header('Content-Type: application/json');
         $uid = (int) ($_SESSION['user']['id'] ?? 0);
-        if (!$uid) { echo json_encode(['status' => 'keluar']); return; }
+        if (!$uid) {
+            $alasan = $_COOKIE['akun_keluar'] ?? '';
+            echo json_encode(['status' => in_array($alasan, ['ditolak', 'dikeluarkan'], true) ? $alasan : 'keluar']);
+            return;
+        }
         $u = $this->db->select('disetujui')->where('id', $uid)->get('user')->row_array();
         if (!$u) {
-            $tolak = $this->db->where('user_id', $uid)->count_all_results('akun_ditolak') > 0;
-            echo json_encode(['status' => $tolak ? 'ditolak' : 'dihapus']);
+            $jejak = $this->db->select('jenis')->where('user_id', $uid)->get('akun_ditolak')->row_array();
+            echo json_encode(['status' => $jejak ? $jejak['jenis'] : 'dihapus']);
             return;
         }
         echo json_encode(['status' => ((int) $u['disetujui'] === 0) ? 'menunggu' : 'disetujui']);

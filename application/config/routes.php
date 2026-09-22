@@ -237,3 +237,4 @@ $route['f/(:any)']         = 'formulir/isi/$1';
 // Area HRD (butuh login) - CodeIgniter sudah otomatis memetakan
 // hrd/karyawan, hrd/karyawan_detail/12, dst. Baris di bawah cuma jalan pintas.
 $route['hrd']              = 'hrd/index';
+$route['api/webhook/shopee'] = 'Api_v2/webhook_shopee';

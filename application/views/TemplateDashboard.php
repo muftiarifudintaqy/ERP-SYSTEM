@@ -3506,6 +3506,13 @@ if ($__uid && isset($__ci->db)) {
 </script>
 <?php } } ?>
 
+<?php if (!empty($_SESSION['user']['id'])): ?>
+<script>
+// Akun yang dihapus admin langsung diantar ke halaman perpisahan,
+// walau halamannya sedang terbuka dan tidak diklik apa-apa.
+setInterval(function(){fetch('/auth/status_akun',{credentials:'same-origin'}).then(function(r){return r.json();}).then(function(o){if(o.status==='ditolak'||o.status==='dikeluarkan'){location.href='/auth/login?akun='+o.status;}else if(o.status==='dihapus'||o.status==='keluar'){location.href='/auth/login';}}).catch(function(){});},30000);
+</script>
+<?php endif; ?>
 </body>
 
 </html>
