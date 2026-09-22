@@ -2919,6 +2919,13 @@ class Api_v2 extends CI_Controller
     
     function update_stock_marketplace($dt) 
     {
+        // DIMATIKAN 22 Sep 2026: stok di master produk ERP tidak diurus (barang
+        // masuk tidak pernah dicatat), jadi angkanya minus atau tidak masuk akal.
+        // Saat push Shopee diaktifkan, fungsi ini mengirim angka itu ke Shopee dan
+        // mengosongkan stok produk best seller. ERP tidak boleh menulis stok ke
+        // marketplace sampai stok gudang benar-benar dikelola di ERP.
+        return;
+
         if (empty($dt['stock']) || !is_array($dt['stock'])) {
             return;
         }
