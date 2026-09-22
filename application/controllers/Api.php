@@ -4406,11 +4406,10 @@ class Api extends CI_Controller
         $partnerKey = $config['partner_key'];
 
         $path = "/api/v2/shop/auth_partner";
-        // Redirect URL Domain di konsol Shopee milik aplikasi Next.js
-        // (app.monteragroup.id), dan hanya boleh satu domain per aplikasi.
-        // Cloudflare meneruskan alamat khusus ini ke erp.skinlyfe.id/api/auth/shopee
-        // sebelum sampai ke Next.js, jadi keduanya bisa memakai aplikasi yang sama.
-        $redirectUrl = "https://app.monteragroup.id/erp-shopee-callback";
+        // Harus sama persis dengan Redirect URL Domain di konsol Shopee
+        // (Montera Web App). Ditulis tetap, bukan base_url(): di belakang
+        // Cloudflare Tunnel base_url() menghasilkan http:// dan Shopee menolaknya.
+        $redirectUrl = "https://erp.skinlyfe.id/api/auth/shopee";
         $timest = time();
         $baseString = sprintf("%s%s%s", $partnerId, $path, $timest);
         $sign = hash_hmac('sha256', $baseString, $partnerKey);
