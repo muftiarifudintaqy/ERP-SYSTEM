@@ -14,7 +14,8 @@ class Product extends BaseController
         $this->set_method_permissions([
             'update_status' => 'edit',
             'update_status_bulk' => 'edit',
-            'sku_peta_simpan' => 'edit'
+            'sku_peta_simpan' => 'edit',
+            'stok_shopee_simpan' => 'edit'
         ]);
     }
     /**
@@ -23,6 +24,172 @@ class Product extends BaseController
      * (1FS+1NS); baris produknya dibuat otomatis kalau semua komponen
      * punya harga beli.
      */
+    /* ================= STOK SHOPEE =================
+     * Admin e-commerce mengisi stok Shopee dari ERP. Stok dibaca langsung dari
+     * Shopee; hanya listing yang diisi yang dikirim, isian kosong tidak disentuh.
+     * Tiap perubahan dicatat di stok_shopee_log (siapa, lama -> baru).
+     */
+    private function _shopee_cfg()
+    {
+        $cfg = [];
+        foreach ($this->db->query("SELECT shop_id, val FROM marketplace_config WHERE opt='shopee' AND status='Aktif'")->result_array() as $r) {
+            $cfg[(string) $r['shop_id']] = json_decode($r['val'], true);
+        }
+        return $cfg;
+    }
+
+    private function _shopee_panggil($c, $shop, $path, $get = [], $post = null)
+    {
+        $ts = time();
+        $sign = hash_hmac('sha256', $c['partner_id'] . $path . $ts . $c['access_token'] . $shop, $c['partner_key']);
+        $q = http_build_query(array_merge($get, ['partner_id' => $c['partner_id'], 'timestamp' => $ts,
+            'access_token' => $c['access_token'], 'shop_id' => $shop, 'sign' => $sign]));
+        $ch = curl_init(rtrim($c['partner_host'], '/') . $path . '?' . $q);
+        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 30]);
+        if ($post !== null) {
+            curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+                CURLOPT_POSTFIELDS => json_encode($post)]);
+        }
+        $r = json_decode((string) curl_exec($ch), true);
+        curl_close($ch);
+        return is_array($r) ? $r : [];
+    }
+
+    private function _shopee_stok_sekarang($c, $shop, array $item_ids)
+    {
+        $hasil = [];
+        foreach (array_chunk($item_ids, 50) as $potong) {
+            $r = $this->_shopee_panggil($c, $shop, '/api/v2/product/get_item_base_info', ['item_id_list' => implode(',', $potong)]);
+            foreach (($r['response']['item_list'] ?? []) as $it) {
+                $st = $it['stock_info_v2']['seller_stock'][0]['stock']
+                    ?? ($it['stock_info_v2']['summary_info']['total_available_stock'] ?? null);
+                $gbr = $it['image']['image_url_list'][0] ?? null;
+                $hasil[(string) $it['item_id']] = ['stok' => $st === null ? null : (int) $st,
+                    'varian' => !empty($it['has_model']), 'gambar' => $gbr];
+            }
+        }
+        return $hasil;
+    }
+
+    public function stok_shopee()
+    {
+        $data['user'] = $_SESSION['user'];
+        $data['title'] = 'Stok Shopee - ' . $this->template->title();
+        $data['content'] = $this->load->view('product/stok_shopee', $data, true);
+        $this->load->view('TemplateDashboard', $data);
+    }
+
+    public function stok_shopee_data()
+    {
+        header('Content-Type: application/json');
+        $cfg = $this->_shopee_cfg();
+        $per_toko = [];
+        foreach ($this->db->query("SELECT id_product, shop_id, shop_name, name, json_varian FROM product_3rd
+                                   WHERE marketplace = 'SHOPEE' ORDER BY shop_name, name")->result_array() as $p) {
+            $sku = [];
+            foreach ((json_decode((string) $p['json_varian'], true) ?: []) as $v) {
+                if (!empty($v['model_sku'])) $sku[$v['model_sku']] = true;
+            }
+            $per_toko[(string) $p['shop_id']][(string) $p['id_product']] = [
+                'toko' => $p['shop_name'], 'item_id' => (string) $p['id_product'],
+                'nama' => $p['name'], 'sku' => implode(', ', array_keys($sku))];
+        }
+        $rows = [];
+        foreach ($per_toko as $shop => $items) {
+            $c = $cfg[$shop] ?? null;
+            $st = $c ? $this->_shopee_stok_sekarang($c, $shop, array_keys($items)) : [];
+            foreach ($items as $id => $r) {
+                $r['stok'] = $st[$id]['stok'] ?? null;
+                $r['varian'] = $st[$id]['varian'] ?? false;
+                $r['gambar'] = $st[$id]['gambar'] ?? null;
+                $r['model'] = [];
+                if ($r['varian'] && $c) {
+                    // Listing bervarian: stok disimpan per varian, jadi daftarnya diambil sendiri.
+                    $m = $this->_shopee_panggil($c, $shop, '/api/v2/product/get_model_list', ['item_id' => (int) $id]);
+                    foreach (($m['response']['model'] ?? []) as $mo) {
+                        $r['model'][] = [
+                            'model_id' => (string) ($mo['model_id'] ?? ''),
+                            'nama' => implode(' / ', array_column($mo['tier_index'] ?? [], 'option')) ?: ($mo['model_sku'] ?? '-'),
+                            'sku' => (string) ($mo['model_sku'] ?? ''),
+                            'stok' => isset($mo['stock_info_v2']['seller_stock'][0]['stock'])
+                                ? (int) $mo['stock_info_v2']['seller_stock'][0]['stock'] : null,
+                        ];
+                    }
+                    if ($r['model']) {
+                        $nama_tier = [];
+                        foreach (($m['response']['tier_variation'] ?? []) as $tv) {
+                            foreach (($tv['option_list'] ?? []) as $i => $op) $nama_tier[$i] = $op['option'] ?? '';
+                        }
+                        foreach ($r['model'] as $k => $mm) {
+                            if ($mm['nama'] === '' || $mm['nama'] === '-') $r['model'][$k]['nama'] = $mm['sku'] ?: 'Varian';
+                        }
+                    }
+                }
+                $rows[] = $r;
+            }
+        }
+        echo json_encode(['success' => true, 'data' => $rows]);
+    }
+
+    public function stok_shopee_simpan()
+    {
+        header('Content-Type: application/json');
+        $daftar = json_decode((string) $this->input->post('perubahan'), true);
+        if (!is_array($daftar) || !$daftar) { echo json_encode(['success' => false, 'message' => 'Tidak ada perubahan.']); return; }
+
+        $minta = [];
+        foreach ($daftar as $d) {
+            $id = (string) ($d['item_id'] ?? ''); $n = (string) ($d['stok'] ?? '');
+            // Angka 0 DITOLAK di sini: mengosongkan stok harus lewat Seller Centre,
+            // supaya kejadian 22 Sep 2026 (stok ter-nol-kan massal) tidak terulang.
+            if (!ctype_digit($id) || !ctype_digit($n) || (int) $n < 1 || (int) $n > 999999) continue;
+            $model = (string) ($d['model_id'] ?? '0');
+            if (!ctype_digit($model)) $model = '0';
+            $minta[$id . '|' . $model] = (int) $n;
+        }
+        if (!$minta) { echo json_encode(['success' => false, 'message' => 'Angka stok tidak valid.']); return; }
+
+        $cfg = $this->_shopee_cfg();
+        $per_item = [];
+        foreach ($minta as $kunci => $n) {
+            list($item, $model) = explode('|', $kunci);
+            $per_item[$item][$model] = $n;
+        }
+        $toko = [];
+        foreach ($this->db->where('marketplace', 'SHOPEE')->where_in('id_product', array_keys($per_item))
+                          ->get('product_3rd')->result_array() as $p) {
+            $toko[(string) $p['shop_id']][] = (string) $p['id_product'];
+        }
+
+        $hasil = [];
+        foreach ($toko as $shop => $ids) {
+            $c = $cfg[$shop] ?? null;
+            if (!$c) { foreach ($ids as $id) $hasil[$id] = ['ok' => false, 'pesan' => 'Toko belum tersambung']; continue; }
+            $sekarang = $this->_shopee_stok_sekarang($c, $shop, $ids);
+            foreach ($ids as $id) {
+                $daftar = []; $kunci = [];
+                foreach ($per_item[$id] as $model => $n) {
+                    $daftar[] = ['model_id' => (int) $model, 'seller_stock' => [['stock' => $n]]];
+                    $kunci[] = $id . '|' . $model;
+                }
+                $r = $this->_shopee_panggil($c, $shop, '/api/v2/product/update_stock', [],
+                    ['item_id' => (int) $id, 'stock_list' => $daftar]);
+                $gl = $r['response']['failure_list'] ?? [];
+                $pesan = (!empty($r['error']) || $gl) ? ($gl[0]['failed_reason'] ?? ($r['message'] ?? 'Gagal')) : 'OK';
+                foreach ($per_item[$id] as $model => $n) {
+                    $k = $id . '|' . $model;
+                    $hasil[$k] = $pesan === 'OK' ? ['ok' => true, 'pesan' => 'Tersimpan', 'stok' => $n]
+                                                 : ['ok' => false, 'pesan' => $pesan];
+                    $this->db->insert('stok_shopee_log', ['user_id' => (int) ($_SESSION['user']['id'] ?? 0), 'shop_id' => $shop,
+                        'item_id' => $k, 'stok_lama' => (string) ($sekarang[$id]['stok'] ?? '?'), 'stok_baru' => $n,
+                        'hasil' => substr($pesan, 0, 250), 'created_at' => date('Y-m-d H:i:s')]);
+                }
+                usleep(150000);
+            }
+        }
+        echo json_encode(['success' => true, 'hasil' => $hasil]);
+    }
+
     /** Halaman SKU yang terjual tapi tidak masuk HPP. */
     public function sku_belum()
     {

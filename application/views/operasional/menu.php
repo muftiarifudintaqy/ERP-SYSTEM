@@ -4,6 +4,7 @@ $btn_2 = "btn-edit"; // CHANNEL
 $btn_3 = "btn-edit"; // EKSPEDISI
 $btn_4 = "btn-edit"; // AKUN MARKETPLACE
 $btn_5 = "btn-edit"; // SKU BELUM DIKENALI
+$btn_6 = "btn-edit"; // STOK SHOPEE
 
 $url = current_url();
 if ($url == base_url() . "product") {
@@ -16,6 +17,8 @@ if ($url == base_url() . "product") {
     $btn_4 = "btn-primary";
 } else if ($url == base_url() . "product/sku_belum") {
     $btn_5 = "btn-primary";
+} else if ($url == base_url() . "product/stok_shopee") {
+    $btn_6 = "btn-primary";
 }
 
 ?>
@@ -26,4 +29,5 @@ if ($url == base_url() . "product") {
     <a href="<?= base_url() ?>marketplace" class="btn <?= $btn_2 ?> me-1 mb-3" style="min-width:90px!important">CHANNEL</a>
     <a href="<?= base_url() ?>shipping" class="btn <?= $btn_3 ?> me-1 mb-3" style="min-width:90px!important">EKSPEDISI</a>
     <a href="<?= base_url() ?>product/sku_belum" class="btn <?= $btn_5 ?> mb-3" style="min-width:90px!important">SKU BELUM DIKENALI</a>
+    <a href="<?= base_url() ?>product/stok_shopee" class="btn <?= $btn_6 ?> ms-1 mb-3" style="min-width:90px!important">STOK SHOPEE</a>
 </div>
