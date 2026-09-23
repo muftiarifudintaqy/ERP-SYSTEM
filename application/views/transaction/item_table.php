@@ -570,6 +570,101 @@ if (!empty($allProductIds)) {
         return row;
     }
 
+    // Angka "Penjualan" versi Shopee Seller Centre: harga produk dikurangi diskon
+    // toko, untuk semua pesanan yang dibuat. Ditampilkan di samping jumlah data
+    // supaya tim bisa mencocokkan langsung dengan Seller Centre. Angka lama tetap.
+    function tampilPenjualanShopee() {
+        const t = (typeof __lastTotals !== 'undefined' && __lastTotals) ? __lastTotals
+                : (typeof __initialTotals !== 'undefined' ? __initialTotals : null);
+        if (!t) return;
+        const nilai = (t.penjualan_shopee != null) ? Number(t.penjualan_shopee) : ((Number(t.omset_kotor) || 0) - (Number(t.diskon_penjual) || 0));
+        let el = document.getElementById('penjualanShopee');
+        if (!el) {
+            const judul = Array.from(document.querySelectorAll('h1,h2,h3,h4,h5,h6,p,div,span,b,strong'))
+                .filter(x => /data ditemukan/i.test(x.textContent) && x.textContent.length < 80)
+                .sort((p, q) => p.textContent.length - q.textContent.length)[0];
+            if (!judul) return;
+            el = document.createElement('div');
+            el.id = 'penjualanShopee';
+            el.style.cssText = 'font-size:.9rem;color:#475569;margin:4px 0 8px';
+            judul.insertAdjacentElement('afterend', el);
+        }
+        el.innerHTML = 'Penjualan (versi Shopee): <b style="color:#ee4d2d">' + formatRupiah(nilai) +
+            '</b> <span style="color:#94a3b8;font-size:.8rem">per ' +
+            new Date().toLocaleTimeString('id-ID', { hour12: false }) +
+            ' &middot; subtotal pesanan setelah semua diskon, semua pesanan dibuat</span>';
+    }
+
+    // Kartu "Metrik Real-time" ala Seller Centre: jam berjalan tiap detik,
+    // penjualan & pesanan hari ini per toko, diperbarui tiap 30 detik.
+    (function () {
+        let selisih = 0;
+        const rp = n => 'Rp' + Math.round(Number(n) || 0).toLocaleString('id-ID');
+
+        function pasang() {
+            if (document.getElementById('metrikRT')) return true;
+            const judul = Array.from(document.querySelectorAll('h1,h2,h3,h4,h5,h6,div,span,b,strong,p'))
+                .find(x => x.children.length === 0 && x.textContent.trim() === 'Filter Order');
+            if (!judul) return false;
+            const wadah = judul.closest('.card') || judul.parentElement;
+            const box = document.createElement('div');
+            box.id = 'metrikRT';
+            box.style.cssText = 'background:#fff;border-radius:14px;padding:20px 24px;margin:0 0 18px;box-shadow:0 1px 3px rgba(0,0,0,.08)';
+            box.innerHTML =
+                '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">' +
+                  '<b style="font-size:1.2rem">Metrik Real-time</b>' +
+                  '<span style="color:#16a34a;font-size:.8rem">&#9679; Update secara real-time</span></div>' +
+                '<div id="rtJam" style="font-size:2rem;font-weight:700;letter-spacing:1px;margin:8px 0 2px;color:#0f172a;font-variant-numeric:tabular-nums">--:--:--</div>' +
+                '<div id="rtTgl" style="color:#64748b;font-size:.85rem;margin-bottom:16px"></div>' +
+                '<div id="rtToko" style="display:flex;gap:16px;flex-wrap:wrap"></div>' +
+                '<div id="rtKet" style="color:#94a3b8;font-size:.75rem;margin-top:12px"></div>';
+            wadah.parentElement.insertBefore(box, wadah);
+            return true;
+        }
+
+        function detak() {
+            const jam = document.getElementById('rtJam');
+            if (!jam) return;
+            const d = new Date(Date.now() + selisih);
+            const dua = x => String(x).padStart(2, '0');
+            jam.textContent = dua(d.getHours()) + ':' + dua(d.getMinutes()) + ':' + dua(d.getSeconds());
+            document.getElementById('rtTgl').textContent =
+                d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ' (WIB)';
+        }
+
+        function muat() {
+            fetch('/transaction/metrik_realtime', { credentials: 'same-origin' })
+                .then(r => r.json())
+                .then(o => {
+                    if (!o.ok) return;
+                    selisih = new Date(o.server).getTime() - Date.now();
+                    const el = document.getElementById('rtToko');
+                    if (!el) return;
+                    el.innerHTML = (o.toko || []).map(t =>
+                        '<div style="flex:1;min-width:240px;border:1px solid #e2e8f0;border-radius:12px;padding:14px 18px">' +
+                          '<div style="font-weight:600;color:#334155;margin-bottom:10px">' + (t.toko || '-') + '</div>' +
+                          '<div style="color:#64748b;font-size:.8rem">Penjualan Hari Ini</div>' +
+                          '<div style="font-size:1.5rem;font-weight:700;color:#0f172a;margin-bottom:10px">' + rp(t.penjualan) + '</div>' +
+                          '<div style="color:#64748b;font-size:.8rem">Pesanan</div>' +
+                          '<div style="font-size:1.5rem;font-weight:700;color:#0f172a">' + Number(t.pesanan).toLocaleString('id-ID') + '</div>' +
+                        '</div>').join('');
+                    document.getElementById('rtKet').textContent =
+                        'Diperbarui otomatis tiap 30 detik · terakhir ' + o.server.slice(11) +
+                        ' · Penjualan = subtotal pesanan setelah semua diskon, sama dengan Seller Centre';
+                })
+                .catch(() => {});
+        }
+
+        function mulai() {
+            if (!pasang()) { setTimeout(mulai, 500); return; }
+            detak(); muat();
+            setInterval(detak, 1000);
+            setInterval(muat, 30000);
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mulai);
+        else mulai();
+    })();
+
     function renderFooterTotals() {
         if (!window.gridOptions?.api) return;
 

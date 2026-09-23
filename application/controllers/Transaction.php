@@ -962,6 +962,16 @@ class Transaction extends BaseController
         if (!empty($totalsRow[0])) {
             foreach ($sumCols as $c) $totals[$c] = (float)($totalsRow[0]["sum_$c"] ?? 0);
         }
+        // Penjualan versi Shopee Seller Centre = Subtotal Pesanan
+        // = jumlah (qty x harga setelah semua diskon produk) dari isi pesanan.
+        $pjRow = $this->mymodel->selectWithQuery("
+            SELECT COALESCE(SUM(j.jq * j.jp), 0) AS v
+            FROM transaction,
+                 JSON_TABLE(IF(JSON_VALID(transaction.pesanan), transaction.pesanan, '[]'),
+                            '$[*]' COLUMNS (jq INT PATH '$.qty', jp DOUBLE PATH '$.price')) j
+            WHERE $qry AND type_sub = 'POS'
+        ");
+        $totals['penjualan_shopee'] = (float)($pjRow[0]['v'] ?? 0);
         $data['totals'] = $totals; // <- kirim ke view
 
         // === JSON mode
@@ -1241,6 +1251,28 @@ class Transaction extends BaseController
             }
         }
         return implode(' + ', $nama);
+    }
+
+    /** Metrik real-time ala Seller Centre: penjualan (subtotal pesanan setelah
+     *  semua diskon) dan jumlah pesanan hari ini, per toko Shopee. */
+    public function metrik_realtime()
+    {
+        header('Content-Type: application/json');
+        $sql = <<<'SQL'
+SELECT MAX(shop_name) AS toko, COUNT(DISTINCT order_id) AS pesanan, COALESCE(SUM(sub), 0) AS penjualan
+FROM (
+  SELECT t.shop_id, t.shop_name, t.order_id,
+         (SELECT COALESCE(SUM(j.jq * j.jp), 0)
+            FROM JSON_TABLE(IF(JSON_VALID(t.pesanan), t.pesanan, '[]'),
+                 '$[*]' COLUMNS (jq INT PATH '$.qty', jp DOUBLE PATH '$.price')) j) AS sub
+  FROM transaction t
+  WHERE t.marketplace = 'SHOPEE' AND t.type_sub = 'POS'
+    AND t.date >= CURDATE() AND t.date < CURDATE() + INTERVAL 1 DAY
+) x GROUP BY shop_id ORDER BY toko
+SQL;
+        $rows = $this->db->query($sql)->result_array();
+        $jam = $this->db->query("SELECT DATE_FORMAT(NOW(), '%Y-%m-%dT%H:%i:%s') AS j")->row_array();
+        echo json_encode(['ok' => true, 'server' => $jam['j'], 'toko' => $rows]);
     }
 
     /** URL gambar produk pertama, untuk ditampilkan di kolom Produk. */

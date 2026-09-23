@@ -4212,6 +4212,45 @@ class Api_v2 extends CI_Controller
                 $dt['price_total'] = doubleval($v2['total_amount']);
                 $dt['price_total_2'] = doubleval($v2['total_amount']);
             }
+            // Isi pesanan yang tercipta tanpa harga (price kosong) dilengkapi dari
+            // item_list Shopee, sama seperti jalur lengkap: price = model_discounted_price
+            // (harga setelah diskon penjual & Shopee = "Subtotal Pesanan" di Seller Centre).
+            // Item yang harganya sudah ada tidak diubah.
+            $isi_lama = json_decode((string) ($trx['pesanan'] ?? ''), true);
+            if ((!is_array($isi_lama) || !$isi_lama) && !empty($v2['item_list'])) {
+                // Isi pesanan kosong total: susun dari item_list, sama dengan jalur lengkap.
+                $baru = array();
+                foreach ($v2['item_list'] as $vv) {
+                    $baru[] = array(
+                        'id_product' => $vv['model_id'], 'sku' => $vv['model_sku'], 'name' => $vv['model_name'],
+                        'id_product_parent' => $vv['item_id'], 'sku_parent' => $vv['item_sku'], 'name_parent' => $vv['item_name'],
+                        'qty' => intval($vv['model_quantity_purchased']),
+                        'price' => intval($vv['model_discounted_price']),
+                        'original_price' => intval($vv['model_original_price']),
+                        'discount' => intval($vv['model_original_price'] - $vv['model_discounted_price']),
+                    );
+                }
+                $dt['pesanan'] = json_encode($baru);
+                $dt['pesanan_count'] = count($baru);
+            } elseif (is_array($isi_lama) && $isi_lama && !empty($v2['item_list'])) {
+                $per_model = array(); $per_item = array();
+                foreach ($v2['item_list'] as $vv) {
+                    $per_model[(string) $vv['model_id']] = $vv;
+                    if (!isset($per_item[(string) $vv['item_id']])) $per_item[(string) $vv['item_id']] = $vv;
+                }
+                $diubah = false;
+                foreach ($isi_lama as $ki => $it) {
+                    if (!empty($it['price'])) continue;
+                    $vv = $per_model[(string) ($it['id_product'] ?? '')] ?? ($per_item[(string) ($it['id_product_parent'] ?? '')] ?? null);
+                    if (!$vv) continue;
+                    $isi_lama[$ki]['qty'] = intval($vv['model_quantity_purchased']);
+                    $isi_lama[$ki]['price'] = intval($vv['model_discounted_price']);
+                    $isi_lama[$ki]['original_price'] = intval($vv['model_original_price']);
+                    $isi_lama[$ki]['discount'] = intval($vv['model_original_price'] - $vv['model_discounted_price']);
+                    $diubah = true;
+                }
+                if ($diubah) $dt['pesanan'] = json_encode($isi_lama);
+            }
             $dt['updated_at'] = DATE("Y-m-d H:i:s");
             $dt['is_webhook'] = 1;
 
