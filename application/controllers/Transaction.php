@@ -1252,6 +1252,15 @@ class Transaction extends BaseController
         foreach ($isi as $it) {
             if (!empty($it['image_url'])) return $it['image_url'];
         }
+        // Order yang masuk lewat push Shopee tidak membawa image_url, jadi gambar
+        // diambil dari master produk (product_3rd) lewat id produk induknya.
+        foreach ($isi as $it) {
+            $idp = $it['id_product_parent'] ?? ($it['id_product'] ?? '');
+            if ($idp === '') continue;
+            $p = $this->db->select('image')->where('id_product', (string) $idp)
+                          ->where('image !=', '')->limit(1)->get('product_3rd')->row_array();
+            if (!empty($p['image'])) return $p['image'];
+        }
         return '';
     }
 

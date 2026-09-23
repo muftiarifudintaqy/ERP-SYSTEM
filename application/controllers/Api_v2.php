@@ -4203,6 +4203,15 @@ class Api_v2 extends CI_Controller
             }
 
             $dt['customer_price'] = $v2['total_amount'];
+            // Jalur ini (detail order lewat push/webhook) sebelumnya tidak mengisi
+            // price_total, jadi semua order Shopee yang masuk lewat push tercatat
+            // Rp 0 sejak push diaktifkan 22 Sep 2026. Samakan dengan jalur sinkron
+            // biasa: price_total = total_amount (yang benar-benar dibayar pembeli).
+            if (doubleval($v2['total_amount']) > 0) {
+                $dt['price'] = doubleval($v2['total_amount']);
+                $dt['price_total'] = doubleval($v2['total_amount']);
+                $dt['price_total_2'] = doubleval($v2['total_amount']);
+            }
             $dt['updated_at'] = DATE("Y-m-d H:i:s");
             $dt['is_webhook'] = 1;
 
