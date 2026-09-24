@@ -1,7 +1,7 @@
 <style>
  .pk{max-width:760px;margin:0 auto}
  .pk-atas{background:#fff;border-radius:16px;padding:22px 24px;box-shadow:0 1px 3px rgba(0,0,0,.08);display:flex;align-items:center;gap:18px;margin-bottom:16px}
- .pk-foto{width:68px;height:68px;border-radius:50%;object-fit:cover;border:3px solid #1F4696}
+ .pk-foto{width:68px;height:68px;border-radius:14px;object-fit:cover;border:3px solid #1F4696}
  .pk-nama{font-size:1.15rem;font-weight:700;color:#0f172a}
  .pk-ket{color:#64748b;font-size:.85rem}
  .pk-angka{margin-left:auto;text-align:right}

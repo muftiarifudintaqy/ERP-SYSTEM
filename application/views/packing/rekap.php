@@ -24,12 +24,20 @@
  .rk-box{cursor:pointer;transition:.15s}
  .rk-box:hover{border-color:#1F4696;box-shadow:0 2px 10px rgba(31,70,150,.15)}
  .rk-box.aktif{border-color:#1F4696;background:#f8faff}
- .rk-foto{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid #1F4696;margin-bottom:8px}
+ .rk-foto{width:46px;height:46px;border-radius:10px;object-fit:cover;border:2px solid #1F4696;margin-bottom:8px}
+ .rk-box.kosong{opacity:.55}
+ .rk-box.kosong .a{color:#94a3b8}
 </style>
 
 <div class="rk">
   <div class="rk-kartu">
-    <h5>Rekap Packing</h5>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px">
+      <h5 style="margin:0">Rekap Packing</h5>
+      <span style="color:#16a34a;font-size:.8rem">&#9679; Update real-time</span>
+    </div>
+    <div id="rkJam" style="font-size:2rem;font-weight:700;letter-spacing:1px;color:#0f172a;
+         font-variant-numeric:tabular-nums;line-height:1">--:--:--</div>
+    <div id="rkTgl" style="color:#64748b;font-size:.85rem;margin-bottom:14px"></div>
     <div class="rk-alat">
       <div><label>Dari tanggal</label><input type="date" id="rkDari"></div>
       <div><label>Sampai tanggal</label><input type="date" id="rkSampai"></div>
@@ -73,6 +81,13 @@
 (function () {
   function el(i){ return document.getElementById(i); }
   function esc(t){ var d=document.createElement('div'); d.textContent=t==null?'':String(t); return d.innerHTML; }
+  var selisih = 0;
+  function detak() {
+    var d = new Date(Date.now() + selisih), dua = function (x) { return String(x).padStart(2, '0'); };
+    el('rkJam').textContent = dua(d.getHours()) + ':' + dua(d.getMinutes()) + ':' + dua(d.getSeconds());
+    el('rkTgl').textContent = d.toLocaleDateString('id-ID',
+      { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ' (WIB)';
+  }
   var hariIni = new Date().toISOString().slice(0,10);
   el('rkDari').value = hariIni; el('rkSampai').value = hariIni;
 
@@ -82,14 +97,17 @@
       .then(function(r){ return r.json(); })
       .then(function(o){
         if (!o.ok) { el('rkOrang').innerHTML = '<div class="rk-kosong">Tidak punya akses.</div>'; return; }
+        if (o.server) selisih = new Date(o.server).getTime() - Date.now();
         el('rkOrang').innerHTML = (o.per_orang || []).length
           ? o.per_orang.map(function(p){
               var f = p.foto ? '/assets/img/user/' + esc(p.foto) : '/assets/img/user/default.png';
-              return '<div class="rk-box" data-uid="' + esc(p.id) + '" data-nama="' + esc(p.nama || '-') + '">' +
+              return '<div class="rk-box' + (Number(p.paket) ? '' : ' kosong') + '" data-uid="' + esc(p.id) + '" data-nama="' + esc(p.nama || '-') + '">' +
                      '<img class="rk-foto" src="' + f + '" onerror="this.src=\'/assets/img/user/default.png\'">' +
                      '<div class="n">' + esc(p.nama || '-') + '</div>' +
                      '<div class="a">' + esc(p.paket) + '</div><div class="k">paket &middot; ' + esc(p.pcs) + ' pcs</div>' +
-                     '<div class="k" style="margin-top:6px">' + esc((p.mulai||'').slice(0,5)) + ' &ndash; ' + esc((p.selesai||'').slice(0,5)) + '</div></div>';
+                     '<div class="k" style="margin-top:6px">' +
+                     (p.mulai ? esc(p.mulai.slice(0,5)) + ' &ndash; ' + esc((p.selesai||'').slice(0,5)) : 'belum mulai') +
+                     '</div></div>';
             }).join('')
           : '<div class="rk-kosong">Belum ada scan pada rentang ini.</div>';
 
@@ -150,6 +168,9 @@
   });
   el('rkCari').addEventListener('click', cari);
   el('rkResi').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); cari(); } });
-  muat();
+  detak(); muat();
+  setInterval(detak, 1000);
+  // Angka disegarkan tiap 30 detik supaya HR melihat perkembangan tanpa refresh.
+  setInterval(function () { if (el('rkSampai').value >= hariIni) muat(); }, 30000);
 })();
 </script>

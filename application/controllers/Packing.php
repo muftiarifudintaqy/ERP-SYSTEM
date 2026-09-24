@@ -11,6 +11,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 class Packing extends CI_Controller
 {
+    /** Empat anak packing: Dhika, Ica, Shintya, Adam. */
+    const AKUN_PACKING = [16, 23, 24, 25];
+
     public function __construct()
     {
         parent::__construct();
@@ -130,20 +133,28 @@ class Packing extends CI_Controller
         if (!preg_match($tgl, $dari))   $dari = date('Y-m-d');
         if (!preg_match($tgl, $sampai)) $sampai = date('Y-m-d');
 
+        // Semua anak packing selalu tampil, walau belum scan sama sekali
+        // (angka 0) -- supaya kelihatan siapa yang belum mulai, bukan hilang
+        // dari daftar dan dikira tidak ada.
         $per_orang = $this->db->query("
-            SELECT u.id, u.full_name AS nama, u.img AS foto, COUNT(*) AS paket, COALESCE(SUM(p.qty),0) AS pcs,
+            SELECT u.id, u.full_name AS nama, u.img AS foto,
+                   COUNT(p.id) AS paket, COALESCE(SUM(p.qty),0) AS pcs,
                    MIN(TIME(p.scanned_at)) AS mulai, MAX(TIME(p.scanned_at)) AS selesai
-            FROM packing_scan p LEFT JOIN user u ON u.id = p.user_id
-            WHERE DATE(p.scanned_at) BETWEEN ? AND ?
-            GROUP BY u.id, u.full_name, u.img ORDER BY paket DESC", [$dari, $sampai])->result_array();
+            FROM user u
+            LEFT JOIN packing_scan p ON p.user_id = u.id AND DATE(p.scanned_at) BETWEEN ? AND ?
+            WHERE u.id IN (" . implode(',', self::AKUN_PACKING) . ")
+            GROUP BY u.id, u.full_name, u.img
+            ORDER BY paket DESC, u.full_name", [$dari, $sampai])->result_array();
 
         $per_hari = $this->db->query("
             SELECT DATE(p.scanned_at) AS tgl, u.full_name AS nama, COUNT(*) AS paket
             FROM packing_scan p LEFT JOIN user u ON u.id = p.user_id
             WHERE DATE(p.scanned_at) BETWEEN ? AND ?
+              AND p.user_id IN (" . implode(',', self::AKUN_PACKING) . ")
             GROUP BY tgl, u.full_name ORDER BY tgl DESC, paket DESC", [$dari, $sampai])->result_array();
 
-        echo json_encode(['ok' => true, 'dari' => $dari, 'sampai' => $sampai,
+        $jam = $this->db->query("SELECT DATE_FORMAT(NOW(), '%Y-%m-%dT%H:%i:%s') AS j")->row_array();
+        echo json_encode(['ok' => true, 'dari' => $dari, 'sampai' => $sampai, 'server' => $jam['j'],
                           'per_orang' => $per_orang, 'per_hari' => $per_hari]);
     }
 
