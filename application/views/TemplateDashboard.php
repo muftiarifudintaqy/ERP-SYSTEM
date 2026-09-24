@@ -1099,6 +1099,29 @@ if (!$_SESSION['is_login']) {
           </a>
         <?php endif; ?>
 
+        <?php
+          // Menu packing. Sengaja tidak lewat modul izin: empat akun packing
+          // (Dhika, Ica, Shintya, Adam) perlu langsung bisa dipakai tanpa
+          // pengaturan Roles. Rekap hanya untuk developer/owner/head admin/HRD.
+          $__uid_pk  = (int) ($_SESSION['user']['id'] ?? 0);
+          $__role_pk = (int) ($_SESSION['user']['role'] ?? 0);
+          $__bisa_scan  = in_array($__uid_pk, [16, 23, 24, 25, 35], true) || in_array($__role_pk, [1, 2, 7], true);
+          $__bisa_rekap = in_array($__role_pk, [1, 2, 4, 5, 6], true);
+        ?>
+        <?php if ($__bisa_scan): ?>
+          <a href="<?= base_url() ?>packing" class="item-menu <?= (uri_string() === 'packing' ? 'active' : '') ?>">
+            <i class="icon bi bi-upc-scan"></i>
+            SCAN PACKING
+          </a>
+        <?php endif; ?>
+
+        <?php if ($__bisa_rekap): ?>
+          <a href="<?= base_url() ?>packing/rekap" class="item-menu <?= (strpos(uri_string(), 'packing/rekap') !== false ? 'active' : '') ?>">
+            <i class="icon bi bi-clipboard-data"></i>
+            REKAP PACKING
+          </a>
+        <?php endif; ?>
+
         <?php if (!empty($modules_permissions['label'])): ?>
           <a href="<?= base_url() ?>label" class="item-menu <?= (isset($menu_label) ? $menu_label : (strpos(uri_string(),'label')!==false ? 'active' : '')) ?>">
             <i class="icon bi bi-tag"></i>
