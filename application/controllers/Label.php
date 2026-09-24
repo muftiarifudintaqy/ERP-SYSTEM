@@ -43,7 +43,11 @@ class Label extends CI_Controller
 
         $nama = [];
         foreach ($isi as $it) {
-            foreach (['model_name', 'item_name', 'model_sku'] as $k) {
+            // Isi pesanan yang disusun ERP memakai kunci name/sku/name_parent,
+            // bukan model_name/item_name seperti data mentah Shopee. Tanpa ini
+            // semua baris dianggap tanpa nama produk lalu dibuang, dan daftar
+            // label tampil kosong padahal ratusan order siap dicetak.
+            foreach (['model_name', 'item_name', 'model_sku', 'name', 'name_parent', 'sku', 'sku_parent'] as $k) {
                 if (!empty($it[$k])) {
                     $n = str_replace('amp;', '', trim((string)$it[$k]));
                     if (mb_strlen($n) > 40) $n = rtrim(mb_substr($n, 0, 40)) . '...';
