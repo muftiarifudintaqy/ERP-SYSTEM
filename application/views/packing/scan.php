@@ -34,6 +34,22 @@
 
   <div class="pk-kotak">
     <input type="text" id="pkInput" placeholder="Tembak barcode resi di sini..." autocomplete="off" autofocus>
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+      <button type="button" id="pkKameraBuka"
+        style="padding:10px 18px;border:0;border-radius:10px;background:#0f766e;color:#fff;font-weight:600;cursor:pointer">
+        &#128247; Scan pakai kamera
+      </button>
+      <span id="pkKameraKet" style="color:#64748b;font-size:.8rem;align-self:center"></span>
+    </div>
+    <div id="pkKamera" style="display:none;margin-top:14px;position:relative;border-radius:14px;overflow:hidden;background:#000">
+      <video id="pkVideo" playsinline muted style="width:100%;max-height:340px;object-fit:cover;display:block"></video>
+      <div id="pkKameraPesan"
+        style="position:absolute;left:0;right:0;bottom:0;background:rgba(15,23,42,.82);color:#fff;
+               padding:10px 14px;font-size:.9rem;text-align:center">Arahkan barcode ke kamera...</div>
+      <button type="button" id="pkKameraTutup"
+        style="position:absolute;top:10px;right:10px;border:0;border-radius:8px;background:#dc2626;color:#fff;
+               padding:8px 14px;font-weight:600;cursor:pointer">Tutup kamera</button>
+    </div>
     <div class="pk-antre" id="pkAntre"></div>
     <div class="pk-hasil" id="pkHasil"></div>
   </div>
@@ -130,8 +146,79 @@
     if (v) kirim(v, false);
   });
   // Kotak scan harus selalu siap menerima tembakan berikutnya.
-  setInterval(function(){ if (document.activeElement !== inp) inp.focus(); }, 800);
-  document.addEventListener('click', function(){ inp.focus(); });
+  setInterval(function(){ if (!kam.jalan && document.activeElement !== inp) inp.focus(); }, 800);
+  document.addEventListener('click', function(e){ if (!kam.jalan && !e.target.closest('button')) inp.focus(); });
+
+  // Mode kamera: dibiarkan menyala sampai ditekan Tutup. Setelah satu barcode
+  // terbaca, jeda 2 detik supaya paket berikutnya tidak terbaca dobel, lalu
+  // otomatis siap lagi -- tidak perlu buka-tutup kamera tiap paket.
+  var kam = { stream: null, detektor: null, jalan: false, jeda: false, terakhir: '' };
+
+  function kamPesan(t, warna) {
+    var el = document.getElementById('pkKameraPesan');
+    el.textContent = t;
+    el.style.background = warna || 'rgba(15,23,42,.82)';
+  }
+
+  function kamBaca() {
+    if (!kam.jalan) return;
+    if (kam.jeda) { setTimeout(kamBaca, 200); return; }
+    var v = document.getElementById('pkVideo');
+    kam.detektor.detect(v)
+      .then(function (hasil) {
+        if (hasil && hasil.length) {
+          var kode = String(hasil[0].rawValue || '').trim();
+          if (kode && kode !== kam.terakhir) {
+            kam.terakhir = kode; kam.jeda = true;
+            kamPesan('Terbaca: ' + kode, 'rgba(22,163,74,.92)');
+            kirim(kode, false);
+            setTimeout(function () {
+              kam.jeda = false; kam.terakhir = '';
+              kamPesan('Siap. Arahkan barcode berikutnya...');
+            }, 2000);
+          }
+        }
+        setTimeout(kamBaca, 180);
+      })
+      .catch(function () { setTimeout(kamBaca, 400); });
+  }
+
+  function kamBuka() {
+    if (!('BarcodeDetector' in window)) {
+      document.getElementById('pkKameraKet').textContent =
+        'Kamera tidak didukung peramban ini. Pakai scanner atau ketik manual.';
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 } } })
+      .then(function (st) {
+        kam.stream = st;
+        var v = document.getElementById('pkVideo');
+        v.srcObject = st; v.setAttribute('playsinline', ''); v.muted = true; v.play();
+        document.getElementById('pkKamera').style.display = 'block';
+        document.getElementById('pkKameraBuka').style.display = 'none';
+        kam.detektor = new BarcodeDetector({
+          formats: ['code_128', 'code_39', 'ean_13', 'ean_8', 'itf', 'qr_code']
+        });
+        kam.jalan = true; kam.jeda = false; kam.terakhir = '';
+        kamPesan('Arahkan barcode ke kamera...');
+        kamBaca();
+      })
+      .catch(function () {
+        document.getElementById('pkKameraKet').textContent = 'Kamera tidak bisa dibuka. Izinkan akses kamera dulu.';
+      });
+  }
+
+  function kamTutup() {
+    kam.jalan = false;
+    if (kam.stream) { kam.stream.getTracks().forEach(function (t) { t.stop(); }); kam.stream = null; }
+    document.getElementById('pkKamera').style.display = 'none';
+    document.getElementById('pkKameraBuka').style.display = 'inline-block';
+    inp.focus();
+  }
+
+  document.getElementById('pkKameraBuka').addEventListener('click', kamBuka);
+  document.getElementById('pkKameraTutup').addEventListener('click', kamTutup);
+  window.addEventListener('beforeunload', kamTutup);
 
   window.addEventListener('online', prosesAntre);
   tampilAntre(); prosesAntre(); muatDaftar();
