@@ -291,7 +291,7 @@ class Transaction extends BaseController
         $qry = "";
         // Dasar hitung sama seperti kartu metrik: 'dibuat' menyaring tanggal
         // order dibuat, 'bayar' menyaring tanggal pembeli membayar.
-        $kolTgl = ($this->input->get('dasar') === 'bayar') ? 'pay_at' : 'date';
+        $kolTgl = ['bayar' => 'pay_at', 'rts' => 'rts_at'][(string) $this->input->get('dasar')] ?? 'date';
         $qry = " DATE($kolTgl) >= '$start_date'
         AND DATE($kolTgl) <= '$until_date' ";
 
@@ -636,7 +636,7 @@ class Transaction extends BaseController
         if ($id_customer) {
             $qry = " customer = '".$this->db->escape_str($id_customer)."' ";
         } else {
-            $kolTgl = ($this->input->get('dasar') === 'bayar') ? 'pay_at' : 'date';
+            $kolTgl = ['bayar' => 'pay_at', 'rts' => 'rts_at'][(string) $this->input->get('dasar')] ?? 'date';
             $qry = " DATE($kolTgl) >= '".$this->db->escape_str($start_date)."'
                     AND DATE($kolTgl) <= '".$this->db->escape_str($until_date)."' ";
 
@@ -1320,10 +1320,15 @@ SQL;
         // 'Siap Dikirim' sengaja tidak disediakan: kolom rts_at berhenti di
         // angka bulat 1000 dan tidak bergerak, jadi isinya batas pengambilan
         // data, bukan waktu kejadian. Perlu ditarik ulang dari API Shopee.
-        $dasar = $this->input->get('dasar') === 'bayar' ? 'bayar' : 'dibuat';
-        $saring = $dasar === 'bayar'
-            ? "AND t.pay_at >= CURDATE() AND t.pay_at < CURDATE() + INTERVAL 1 DAY"
-            : "AND t.date  >= CURDATE() AND t.date  < CURDATE() + INTERVAL 1 DAY";
+        $d = (string) $this->input->get('dasar');
+        $dasar = in_array($d, ['bayar', 'rts'], true) ? $d : 'dibuat';
+        if ($dasar === 'bayar') {
+            $saring = "AND t.pay_at >= CURDATE() AND t.pay_at < CURDATE() + INTERVAL 1 DAY";
+        } elseif ($dasar === 'rts') {
+            $saring = "AND t.rts_at >= CURDATE() AND t.rts_at < CURDATE() + INTERVAL 1 DAY";
+        } else {
+            $saring = "AND t.date >= CURDATE() AND t.date < CURDATE() + INTERVAL 1 DAY";
+        }
         $sql = str_replace('%SARING%', $saring, $sql);
         $rows = $this->db->query($sql)->result_array();
         $jam = $this->db->query("SELECT DATE_FORMAT(NOW(), '%Y-%m-%dT%H:%i:%s') AS j")->row_array();

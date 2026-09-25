@@ -623,6 +623,7 @@ if (!empty($allProductIds)) {
                   '<span id="mrDasar" style="margin-left:auto;display:inline-flex;gap:0;border:1px solid #cbd5e1;' +
                     'border-radius:8px;overflow:hidden;font-size:.78rem">' +
                     '<button type="button" data-d="dibuat" class="mr-tb" style="border:0;padding:6px 12px;cursor:pointer">Pesanan Dibuat</button>' +
+                    '<button type="button" data-d="rts" class="mr-tb" style="border:0;padding:6px 12px;cursor:pointer;border-left:1px solid #cbd5e1">Pesanan Siap Dikirim</button>' +
                     '<button type="button" data-d="bayar" class="mr-tb" style="border:0;padding:6px 12px;cursor:pointer;border-left:1px solid #cbd5e1">Pesanan Dibayar</button>' +
                   '</span></div>' +
                 '<div id="rtJam" style="font-size:2rem;font-weight:700;letter-spacing:1px;margin:8px 0 2px;color:#0f172a;font-variant-numeric:tabular-nums">--:--:--</div>' +
@@ -661,7 +662,7 @@ if (!empty($allProductIds)) {
                         '</div>').join('');
                     document.getElementById('rtKet').textContent =
                         'Diperbarui otomatis tiap 30 detik · terakhir ' + o.server.slice(11) +
-                        ' · Dasar: ' + (mrDasarAktif === 'bayar' ? 'Pesanan Dibayar' : 'Pesanan Dibuat') +
+                        ' · Dasar: ' + (mrDasarAktif === 'bayar' ? 'Pesanan Dibayar' : mrDasarAktif === 'rts' ? 'Pesanan Siap Dikirim' : 'Pesanan Dibuat') +
                         ' · Penjualan = subtotal pesanan setelah semua diskon, sama dengan Seller Centre';
 
                     var kotak = document.getElementById('mrDasar');
