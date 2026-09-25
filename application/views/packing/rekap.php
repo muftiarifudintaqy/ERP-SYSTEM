@@ -15,9 +15,28 @@
  .rk-box .n{font-weight:700;color:#334155;margin-bottom:8px}
  .rk-box .a{font-size:2.2rem;font-weight:800;color:#1F4696;line-height:1}
  .rk-box .k{color:#64748b;font-size:.8rem}
- .rk table{width:100%;border-collapse:collapse;font-size:.85rem}
- .rk th{text-align:left;color:#64748b;font-weight:600;padding:8px;border-bottom:1px solid #e2e8f0}
- .rk td{padding:8px;border-bottom:1px solid #f1f5f9}
+ /* daterangepicker-dikecualikan: pustaka kalender memakai <table> juga,
+    jadi aturan tabel di halaman ini dibatasi agar kolom tanggalnya tidak
+    ikut ditimpa dan angkanya hilang. */
+ .rk table:not(.daterangepicker table){width:100%;border-collapse:collapse;font-size:.85rem}
+ .rk th:not(.daterangepicker th){text-align:left;color:#64748b;font-weight:600;padding:8px;border-bottom:1px solid #e2e8f0}
+ .rk td:not(.daterangepicker td){padding:8px;border-bottom:1px solid #f1f5f9}
+ .daterangepicker{z-index:3000}
+ /* in-range ditulis lebih dulu: tanggal awal dan akhir juga berkelas
+    in-range, jadi kalau biru muda ditulis belakangan dia menimpa biru tua
+    dan tanggal awal yang dipilih terlihat hilang. */
+ .daterangepicker td.in-range{background-color:#E8EDF8 !important;color:#1F2937 !important}
+ .daterangepicker td.active,.daterangepicker td.active:hover,
+ .daterangepicker td.start-date,.daterangepicker td.start-date.in-range,
+ .daterangepicker td.end-date,.daterangepicker td.end-date.in-range,
+ .daterangepicker .ranges li.active,.daterangepicker .applyBtn{
+   background-color:#1F4696 !important;border-color:#1F4696 !important;color:#fff !important}
+ .daterangepicker .table,.daterangepicker table{
+   width:auto !important;table-layout:auto !important;border-collapse:collapse !important}
+ .daterangepicker td,.daterangepicker th{
+   white-space:nowrap !important;min-width:30px !important;width:30px !important;
+   height:28px !important;padding:2px !important;font-size:13px !important;
+   border:0 !important;text-align:center !important;vertical-align:middle !important}
  .rk .kanan{text-align:right}
  .rk-cari{display:flex;gap:10px;flex-wrap:wrap}
  .rk-cari input{flex:1;min-width:220px;padding:10px 14px;border:1px solid #cbd5e1;border-radius:8px;font-family:ui-monospace,Menlo,monospace}
@@ -215,12 +234,12 @@
       locale: {
         format: 'DD/MM/YYYY', applyLabel: 'Terapkan', cancelLabel: 'Batal',
         customRangeLabel: 'Pilih sendiri',
-        daysOfWeek: ['Min','Sen','Sel','Rab','Kam','Jum','Sab'],
+        daysOfWeek: ['Mg','Sn','Sl','Rb','Km','Jm','Sb'],
         monthNames: ['Januari','Februari','Maret','April','Mei','Juni',
                      'Juli','Agustus','September','Oktober','November','Desember'],
         firstDay: 1
       },
-      opens: 'right', showDropdowns: true,
+      parentEl: 'body', opens: 'left',
       startDate: m(), endDate: m(),
       maxDate: m(),
       ranges: {
