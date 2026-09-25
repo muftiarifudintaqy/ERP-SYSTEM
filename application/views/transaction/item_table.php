@@ -661,7 +661,7 @@ if (!empty($allProductIds)) {
                           '<div style="font-size:1.5rem;font-weight:700;color:#0f172a">' + Number(t.pesanan).toLocaleString('id-ID') + '</div>' +
                         '</div>').join('');
                     document.getElementById('rtKet').textContent =
-                        'Diperbarui otomatis tiap 30 detik · terakhir ' + o.server.slice(11) +
+                        'Diperbarui otomatis tiap 10 detik · terakhir ' + o.server.slice(11) +
                         ' · Dasar: ' + (mrDasarAktif === 'bayar' ? 'Pesanan Dibayar' : mrDasarAktif === 'rts' ? 'Pesanan Siap Dikirim' : 'Pesanan Dibuat') +
                         ' · Penjualan = subtotal pesanan setelah semua diskon, sama dengan Seller Centre';
 
@@ -695,7 +695,7 @@ if (!empty($allProductIds)) {
             if (!pasang()) { setTimeout(mulai, 500); return; }
             detak(); muat();
             setInterval(detak, 1000);
-            setInterval(muat, 30000);
+            setInterval(muat, 10000);
         }
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mulai);
         else mulai();

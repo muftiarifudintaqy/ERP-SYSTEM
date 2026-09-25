@@ -291,9 +291,18 @@ class Transaction extends BaseController
         $qry = "";
         // Dasar hitung sama seperti kartu metrik: 'dibuat' menyaring tanggal
         // order dibuat, 'bayar' menyaring tanggal pembeli membayar.
-        $kolTgl = ['bayar' => 'pay_at', 'rts' => 'rts_at'][(string) $this->input->get('dasar')] ?? 'date';
+        $kolTgl = ['bayar' => 'pay_at'][(string) $this->input->get('dasar')] ?? 'date';
         $qry = " DATE($kolTgl) >= '$start_date'
         AND DATE($kolTgl) <= '$until_date' ";
+        if ($this->input->get('dasar') === 'rts') {
+            // Sejalan dengan kartu metrik: Shopee memakai status logistik paket.
+            $qry = " order_id IN (
+                SELECT JSON_UNQUOTE(JSON_EXTRACT(w.input, '$.data.ordersn')) FROM webhook w
+                WHERE w.marketplace = 'SHOPEE' AND w.created_at >= CURDATE()
+                  AND JSON_EXTRACT(w.input, '$.code') = 30
+                  AND JSON_UNQUOTE(JSON_EXTRACT(w.input, '$.data.fulfillment_status')) = 'LOGISTICS_READY'
+            ) ";
+        }
 
         $ids = $_GET['ids'];
         $data['ids'] = $ids;
@@ -636,9 +645,17 @@ class Transaction extends BaseController
         if ($id_customer) {
             $qry = " customer = '".$this->db->escape_str($id_customer)."' ";
         } else {
-            $kolTgl = ['bayar' => 'pay_at', 'rts' => 'rts_at'][(string) $this->input->get('dasar')] ?? 'date';
+            $kolTgl = ['bayar' => 'pay_at'][(string) $this->input->get('dasar')] ?? 'date';
             $qry = " DATE($kolTgl) >= '".$this->db->escape_str($start_date)."'
                     AND DATE($kolTgl) <= '".$this->db->escape_str($until_date)."' ";
+            if ($this->input->get('dasar') === 'rts') {
+                $qry = " order_id IN (
+                    SELECT JSON_UNQUOTE(JSON_EXTRACT(w.input, '$.data.ordersn')) FROM webhook w
+                    WHERE w.marketplace = 'SHOPEE' AND w.created_at >= CURDATE()
+                      AND JSON_EXTRACT(w.input, '$.code') = 30
+                      AND JSON_UNQUOTE(JSON_EXTRACT(w.input, '$.data.fulfillment_status')) = 'LOGISTICS_READY'
+                ) ";
+            }
 
             if ($brand == "LAINNYA") {
                 $ids = "";
@@ -1325,7 +1342,16 @@ SQL;
         if ($dasar === 'bayar') {
             $saring = "AND t.pay_at >= CURDATE() AND t.pay_at < CURDATE() + INTERVAL 1 DAY";
         } elseif ($dasar === 'rts') {
-            $saring = "AND t.rts_at >= CURDATE() AND t.rts_at < CURDATE() + INTERVAL 1 DAY";
+            // Shopee menghitung "Pesanan Siap Dikirim" dari status logistik paket
+            // (LOGISTICS_READY di push code 30), bukan dari status order PROCESSED.
+            // Terbukti cocok: ERP 1.076 vs Seller Centre 1.075 pada menit yang sama.
+            $saring = "AND t.order_id IN (
+                SELECT JSON_UNQUOTE(JSON_EXTRACT(w.input, '$.data.ordersn'))
+                FROM webhook w
+                WHERE w.marketplace = 'SHOPEE' AND w.created_at >= CURDATE()
+                  AND JSON_EXTRACT(w.input, '$.code') = 30
+                  AND JSON_UNQUOTE(JSON_EXTRACT(w.input, '$.data.fulfillment_status')) = 'LOGISTICS_READY'
+            )";
         } else {
             $saring = "AND t.date >= CURDATE() AND t.date < CURDATE() + INTERVAL 1 DAY";
         }
