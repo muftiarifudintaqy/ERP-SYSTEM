@@ -1267,12 +1267,23 @@ FROM (
                  '$[*]' COLUMNS (jq INT PATH '$.qty', jp DOUBLE PATH '$.price')) j) AS sub
   FROM transaction t
   WHERE t.marketplace = 'SHOPEE' AND t.type_sub = 'POS'
-    AND t.date >= CURDATE() AND t.date < CURDATE() + INTERVAL 1 DAY
+    %SARING%
 ) x GROUP BY shop_id ORDER BY toko
 SQL;
+        // Dua dasar hitung yang datanya terbukti sahih:
+        //  - dibuat : t.date, cocok persis dengan Seller Centre (903 vs 903)
+        //  - bayar  : t.pay_at, waktu bayar asli (tersebar wajar per jam)
+        // 'Siap Dikirim' sengaja tidak disediakan: kolom rts_at berhenti di
+        // angka bulat 1000 dan tidak bergerak, jadi isinya batas pengambilan
+        // data, bukan waktu kejadian. Perlu ditarik ulang dari API Shopee.
+        $dasar = $this->input->get('dasar') === 'bayar' ? 'bayar' : 'dibuat';
+        $saring = $dasar === 'bayar'
+            ? "AND t.pay_at >= CURDATE() AND t.pay_at < CURDATE() + INTERVAL 1 DAY"
+            : "AND t.date  >= CURDATE() AND t.date  < CURDATE() + INTERVAL 1 DAY";
+        $sql = str_replace('%SARING%', $saring, $sql);
         $rows = $this->db->query($sql)->result_array();
         $jam = $this->db->query("SELECT DATE_FORMAT(NOW(), '%Y-%m-%dT%H:%i:%s') AS j")->row_array();
-        echo json_encode(['ok' => true, 'server' => $jam['j'], 'toko' => $rows]);
+        echo json_encode(['ok' => true, 'server' => $jam['j'], 'dasar' => $dasar, 'toko' => $rows]);
     }
 
     /** URL gambar produk pertama, untuk ditampilkan di kolom Produk. */

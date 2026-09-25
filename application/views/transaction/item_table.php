@@ -595,6 +595,12 @@ if (!empty($allProductIds)) {
             ' &middot; subtotal pesanan setelah semua diskon, semua pesanan dibuat</span>';
     }
 
+    // Dasar hitung mengikuti Seller Centre: angka Shopee berubah drastis
+    // tergantung pilihan ini, jadi pilihannya disediakan agar tim ads dan
+    // ERP bisa menyamakan patokan. Pilihan diingat di peramban.
+    var mrDasarAktif = 'dibuat';
+    try { mrDasarAktif = localStorage.getItem('mrDasar') || 'dibuat'; } catch (e) {}
+
     // Kartu "Metrik Real-time" ala Seller Centre: jam berjalan tiap detik,
     // penjualan & pesanan hari ini per toko, diperbarui tiap 30 detik.
     (function () {
@@ -613,7 +619,12 @@ if (!empty($allProductIds)) {
             box.innerHTML =
                 '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">' +
                   '<b style="font-size:1.2rem">Metrik Real-time</b>' +
-                  '<span style="color:#16a34a;font-size:.8rem">&#9679; Update secara real-time</span></div>' +
+                  '<span style="color:#16a34a;font-size:.8rem">&#9679; Update secara real-time</span>' +
+                  '<span id="mrDasar" style="margin-left:auto;display:inline-flex;gap:0;border:1px solid #cbd5e1;' +
+                    'border-radius:8px;overflow:hidden;font-size:.78rem">' +
+                    '<button type="button" data-d="dibuat" class="mr-tb" style="border:0;padding:6px 12px;cursor:pointer">Pesanan Dibuat</button>' +
+                    '<button type="button" data-d="bayar" class="mr-tb" style="border:0;padding:6px 12px;cursor:pointer;border-left:1px solid #cbd5e1">Pesanan Dibayar</button>' +
+                  '</span></div>' +
                 '<div id="rtJam" style="font-size:2rem;font-weight:700;letter-spacing:1px;margin:8px 0 2px;color:#0f172a;font-variant-numeric:tabular-nums">--:--:--</div>' +
                 '<div id="rtTgl" style="color:#64748b;font-size:.85rem;margin-bottom:16px"></div>' +
                 '<div id="rtToko" style="display:flex;gap:16px;flex-wrap:wrap"></div>' +
@@ -633,7 +644,7 @@ if (!empty($allProductIds)) {
         }
 
         function muat() {
-            fetch('/transaction/metrik_realtime', { credentials: 'same-origin' })
+            fetch('/transaction/metrik_realtime?dasar=' + mrDasarAktif, { credentials: 'same-origin' })
                 .then(r => r.json())
                 .then(o => {
                     if (!o.ok) return;
@@ -650,7 +661,27 @@ if (!empty($allProductIds)) {
                         '</div>').join('');
                     document.getElementById('rtKet').textContent =
                         'Diperbarui otomatis tiap 30 detik · terakhir ' + o.server.slice(11) +
+                        ' · Dasar: ' + (mrDasarAktif === 'bayar' ? 'Pesanan Dibayar' : 'Pesanan Dibuat') +
                         ' · Penjualan = subtotal pesanan setelah semua diskon, sama dengan Seller Centre';
+
+                    var kotak = document.getElementById('mrDasar');
+                    if (kotak && !kotak.dataset.siap) {
+                      kotak.dataset.siap = '1';
+                      kotak.addEventListener('click', function (e) {
+                        var b = e.target.closest('.mr-tb'); if (!b) return;
+                        mrDasarAktif = b.dataset.d;
+                        try { localStorage.setItem('mrDasar', mrDasarAktif); } catch (er) {}
+                        muat();
+                      });
+                    }
+                    if (kotak) {
+                      Array.prototype.forEach.call(kotak.querySelectorAll('.mr-tb'), function (b) {
+                        var on = b.dataset.d === mrDasarAktif;
+                        b.style.background = on ? '#1F4696' : '#fff';
+                        b.style.color = on ? '#fff' : '#475569';
+                        b.style.fontWeight = on ? '600' : '400';
+                      });
+                    }
                 })
                 .catch(() => {});
         }
