@@ -263,7 +263,7 @@ class Product extends BaseController
         $data['order_status'] = $this->mymodel->selectWithQuery("SELECT DISTINCT order_status FROM stock WHERE order_status != '' ORDER BY order_status ASC");
 
         $qry = "1=1";
-        if ($brand) $qry .= " AND brand = '$brand'";
+        if ($brand) $qry .= " AND brand = '".$this->db->escape_str($brand)."'";
         if ($marketplace) $qry .= " AND marketplace = '$marketplace'";
         if ($keyword) {
             switch ($data['keyword_category']) {
@@ -396,7 +396,7 @@ class Product extends BaseController
         }
 
         if (!empty($brand)) {
-            $qry .= " AND stock.brand = '$brand'";
+            $qry .= " AND stock.brand = '".$this->db->escape_str($brand)."'";
         }
 
         if (!empty($marketplace)) {
@@ -483,7 +483,7 @@ class Product extends BaseController
         $qry = "1=1";
 
         if ($brand) {
-            $qry .= " AND brand = '$brand'";
+            $qry .= " AND brand = '".$this->db->escape_str($brand)."'";
         }
 
         if ($marketplace) {
@@ -586,7 +586,7 @@ class Product extends BaseController
         $qry = "1=1";
 
         if ($brand) {
-            $qry .= " AND brand = '$brand'";
+            $qry .= " AND brand = '".$this->db->escape_str($brand)."'";
         }
 
         if ($marketplace) {
@@ -704,7 +704,7 @@ class Product extends BaseController
         }
 
         if (!empty($brand)) {
-            $qry .= " AND stock.brand = '$brand'";
+            $qry .= " AND stock.brand = '".$this->db->escape_str($brand)."'";
         }
 
         if (!empty($marketplace)) {

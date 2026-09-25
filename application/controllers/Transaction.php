@@ -319,7 +319,7 @@ class Transaction extends BaseController
             $qry .= " AND brand NOT IN ($ids) ";
         } else {
             if ($brand) {
-                $qry .= " AND brand = '$brand' ";
+                $qry .= " AND brand = '".$this->db->escape_str($brand)."' ";
             }
         }
 
@@ -6440,7 +6440,7 @@ SQL;
             $qry .= " AND brand NOT IN ($ids) ";
         } else {
             if ($brand) {
-                $qry .= " AND brand = '$brand' ";
+                $qry .= " AND brand = '".$this->db->escape_str($brand)."' ";
             }
         }
 
