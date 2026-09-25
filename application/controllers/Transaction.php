@@ -292,8 +292,13 @@ class Transaction extends BaseController
         // Dasar hitung sama seperti kartu metrik: 'dibuat' menyaring tanggal
         // order dibuat, 'bayar' menyaring tanggal pembeli membayar.
         $kolTgl = ['bayar' => 'pay_at'][(string) $this->input->get('dasar')] ?? 'date';
+        // Kartu metrik hanya menghitung Shopee. Begitu dasar hitung dipakai,
+        // tabel ikut dibatasi ke Shopee juga supaya kedua angka sebanding --
+        // tanpa ini order TikTok ikut terhitung dan angkanya terlihat meleset.
+        $mpDasar = in_array((string) $this->input->get('dasar'), ['bayar','rts'], true)
+                 ? " AND marketplace = 'SHOPEE' " : '';
         $qry = " DATE($kolTgl) >= '$start_date'
-        AND DATE($kolTgl) <= '$until_date' ";
+        AND DATE($kolTgl) <= '$until_date' " . $mpDasar;
         if ($this->input->get('dasar') === 'rts') {
             // Sejalan dengan kartu metrik: Shopee memakai status logistik paket.
             $qry = " order_id IN (
@@ -301,7 +306,7 @@ class Transaction extends BaseController
                 WHERE w.marketplace = 'SHOPEE' AND w.created_at >= CURDATE()
                   AND JSON_EXTRACT(w.input, '$.code') = 30
                   AND JSON_UNQUOTE(JSON_EXTRACT(w.input, '$.data.fulfillment_status')) = 'LOGISTICS_READY'
-            ) ";
+            ) AND marketplace = 'SHOPEE' ";
         }
 
         $ids = $_GET['ids'];
@@ -646,15 +651,20 @@ class Transaction extends BaseController
             $qry = " customer = '".$this->db->escape_str($id_customer)."' ";
         } else {
             $kolTgl = ['bayar' => 'pay_at'][(string) $this->input->get('dasar')] ?? 'date';
+        // Kartu metrik hanya menghitung Shopee. Begitu dasar hitung dipakai,
+        // tabel ikut dibatasi ke Shopee juga supaya kedua angka sebanding --
+        // tanpa ini order TikTok ikut terhitung dan angkanya terlihat meleset.
+        $mpDasar = in_array((string) $this->input->get('dasar'), ['bayar','rts'], true)
+                 ? " AND marketplace = 'SHOPEE' " : '';
             $qry = " DATE($kolTgl) >= '".$this->db->escape_str($start_date)."'
-                    AND DATE($kolTgl) <= '".$this->db->escape_str($until_date)."' ";
+                    AND DATE($kolTgl) <= '".$this->db->escape_str($until_date)."' " . $mpDasar;
             if ($this->input->get('dasar') === 'rts') {
                 $qry = " order_id IN (
                     SELECT JSON_UNQUOTE(JSON_EXTRACT(w.input, '$.data.ordersn')) FROM webhook w
                     WHERE w.marketplace = 'SHOPEE' AND w.created_at >= CURDATE()
                       AND JSON_EXTRACT(w.input, '$.code') = 30
                       AND JSON_UNQUOTE(JSON_EXTRACT(w.input, '$.data.fulfillment_status')) = 'LOGISTICS_READY'
-                ) ";
+                ) AND marketplace = 'SHOPEE' ";
             }
 
             if ($brand == "LAINNYA") {
@@ -1323,11 +1333,16 @@ class Transaction extends BaseController
 SELECT MAX(shop_name) AS toko, COUNT(DISTINCT order_id) AS pesanan, COALESCE(SUM(sub), 0) AS penjualan
 FROM (
   SELECT t.shop_id, t.shop_name, t.order_id,
-         (SELECT COALESCE(SUM(j.jq * j.jp), 0)
-            FROM JSON_TABLE(IF(JSON_VALID(t.pesanan), t.pesanan, '[]'),
-                 '$[*]' COLUMNS (jq INT PATH '$.qty', jp DOUBLE PATH '$.price')) j) AS sub
+         -- Shopee menyimpan harga per item di isi pesanan; TikTok tidak
+         -- (kunci discounted_price di sana tidak cocok dengan nilai order),
+         -- jadi untuk TikTok dipakai kolom price_total yang sudah benar.
+         CASE WHEN t.marketplace = 'TIKTOK' THEN COALESCE(t.price_total, 0)
+              ELSE (SELECT COALESCE(SUM(j.jq * j.jp), 0)
+                      FROM JSON_TABLE(IF(JSON_VALID(t.pesanan), t.pesanan, '[]'),
+                           '$[*]' COLUMNS (jq INT PATH '$.qty', jp DOUBLE PATH '$.price')) j)
+         END AS sub
   FROM transaction t
-  WHERE t.marketplace = 'SHOPEE' AND t.type_sub = 'POS'
+  WHERE t.type_sub = 'POS' AND t.marketplace IN ('SHOPEE','TIKTOK')
     %SARING%
 ) x GROUP BY shop_id ORDER BY toko
 SQL;
@@ -1340,12 +1355,14 @@ SQL;
         $d = (string) $this->input->get('dasar');
         $dasar = in_array($d, ['bayar', 'rts'], true) ? $d : 'dibuat';
         if ($dasar === 'bayar') {
-            $saring = "AND t.pay_at >= CURDATE() AND t.pay_at < CURDATE() + INTERVAL 1 DAY";
+            // TikTok tidak mengirim waktu bayar, jadi dasar ini khusus Shopee.
+            $saring = "AND t.marketplace = 'SHOPEE'
+                       AND t.pay_at >= CURDATE() AND t.pay_at < CURDATE() + INTERVAL 1 DAY";
         } elseif ($dasar === 'rts') {
             // Shopee menghitung "Pesanan Siap Dikirim" dari status logistik paket
             // (LOGISTICS_READY di push code 30), bukan dari status order PROCESSED.
             // Terbukti cocok: ERP 1.076 vs Seller Centre 1.075 pada menit yang sama.
-            $saring = "AND t.order_id IN (
+            $saring = "AND t.marketplace = 'SHOPEE' AND t.order_id IN (
                 SELECT JSON_UNQUOTE(JSON_EXTRACT(w.input, '$.data.ordersn'))
                 FROM webhook w
                 WHERE w.marketplace = 'SHOPEE' AND w.created_at >= CURDATE()
