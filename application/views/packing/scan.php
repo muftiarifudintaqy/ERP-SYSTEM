@@ -33,7 +33,20 @@
   </div>
 
   <div class="pk-kotak">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;color:#16a34a;font-weight:600;font-size:.9rem">
+      <span style="width:9px;height:9px;border-radius:50%;background:#16a34a;display:inline-block"></span>
+      Siap menerima scan &mdash; langsung tembak, tidak perlu disambungkan
+    </div>
     <input type="text" id="pkInput" placeholder="Tembak barcode resi di sini..." autocomplete="off" autofocus>
+    <div style="margin-top:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;
+                color:#475569;font-size:.83rem;line-height:1.6">
+      <b style="color:#0f172a">Cara pakai alat scan</b><br>
+      Colok alat scannya, lalu langsung tembak barcode resi di paket. Tidak ada tombol
+      sambungkan &mdash; alat scan bekerja seperti papan ketik, jadi begitu dicolok dia
+      langsung bisa dipakai. Kalau berhasil, kotak hijau muncul beserta nama produknya.<br>
+      <span style="color:#64748b">Belum punya alat scan? Tekan tombol kamera di bawah, atau ketik
+      nomor resinya lalu tekan Enter &mdash; hasilnya sama saja.</span>
+    </div>
     <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
       <button type="button" id="pkKameraBuka"
         style="padding:10px 18px;border:0;border-radius:10px;background:#0f766e;color:#fff;font-weight:600;cursor:pointer">
@@ -222,6 +235,6 @@
 
   window.addEventListener('online', prosesAntre);
   tampilAntre(); prosesAntre(); muatDaftar();
-  setInterval(muatDaftar, 60000);
+  setInterval(function () { if (!document.hidden) muatDaftar(); }, 5000);
 })();
 </script>

@@ -6,8 +6,12 @@
  .rk-alat label{display:block;font-size:.8rem;color:#64748b;margin-bottom:4px}
  .rk-alat input{padding:8px 12px;border:1px solid #cbd5e1;border-radius:8px}
  .rk-alat button{padding:9px 18px;border:0;border-radius:8px;background:#1F4696;color:#fff;font-weight:600;cursor:pointer}
- .rk-orang{display:flex;gap:14px;flex-wrap:wrap}
- .rk-box{flex:1;min-width:190px;border:1px solid #e2e8f0;border-radius:14px;padding:16px 18px}
+ .rk-orang{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+ @media(max-width:900px){.rk-orang{grid-template-columns:repeat(2,1fr)}}
+ @media(max-width:520px){.rk-orang{grid-template-columns:1fr}}
+ .rk-box{border:1px solid #e2e8f0;border-radius:14px;padding:16px 18px;
+         display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+ .rk-box .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
  .rk-box .n{font-weight:700;color:#334155;margin-bottom:8px}
  .rk-box .a{font-size:2.2rem;font-weight:800;color:#1F4696;line-height:1}
  .rk-box .k{color:#64748b;font-size:.8rem}
@@ -24,7 +28,7 @@
  .rk-box{cursor:pointer;transition:.15s}
  .rk-box:hover{border-color:#1F4696;box-shadow:0 2px 10px rgba(31,70,150,.15)}
  .rk-box.aktif{border-color:#1F4696;background:#f8faff}
- .rk-foto{width:46px;height:46px;border-radius:10px;object-fit:cover;border:2px solid #1F4696;margin-bottom:8px}
+ .rk-foto{width:56px;height:56px;border-radius:12px;object-fit:cover;border:2px solid #1F4696;margin-bottom:10px;background:#f1f5f9}
  .rk-box.kosong{opacity:.55}
  .rk-box.kosong .a{color:#94a3b8}
 </style>
@@ -39,10 +43,31 @@
          font-variant-numeric:tabular-nums;line-height:1">--:--:--</div>
     <div id="rkTgl" style="color:#64748b;font-size:.85rem;margin-bottom:14px"></div>
     <div class="rk-alat">
-      <div><label>Dari tanggal</label><input type="date" id="rkDari"></div>
-      <div><label>Sampai tanggal</label><input type="date" id="rkSampai"></div>
+      <div style="flex:1;min-width:280px">
+        <label>Rentang tanggal</label>
+        <input type="text" id="rkRange" readonly
+               style="width:100%;cursor:pointer;background:#fff;padding:9px 12px;
+                      border:1px solid #cbd5e1;border-radius:8px">
+        <input type="hidden" id="rkDari"><input type="hidden" id="rkSampai">
+      </div>
       <button type="button" id="rkTampil">Tampilkan</button>
-      <button type="button" id="rkBulan" style="background:#0f766e">Bulan ini</button>
+    </div>
+  </div>
+
+  <div class="rk-kartu" style="background:linear-gradient(135deg,#1F4696,#2563eb);color:#fff">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;text-align:center">
+      <div>
+        <div style="opacity:.8;font-size:.8rem;margin-bottom:4px">Total paket dipacking</div>
+        <div id="rkTotalPaket" style="font-size:3rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums">0</div>
+      </div>
+      <div>
+        <div style="opacity:.8;font-size:.8rem;margin-bottom:4px">Total barang (pcs)</div>
+        <div id="rkTotalPcs" style="font-size:2rem;font-weight:700;line-height:1.3;font-variant-numeric:tabular-nums">0</div>
+      </div>
+      <div>
+        <div style="opacity:.8;font-size:.8rem;margin-bottom:4px">Yang sudah mulai</div>
+        <div id="rkTotalOrang" style="font-size:2rem;font-weight:700;line-height:1.3">0 / 4</div>
+      </div>
     </div>
   </div>
 
@@ -88,7 +113,11 @@
     el('rkTgl').textContent = d.toLocaleDateString('id-ID',
       { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ' (WIB)';
   }
-  var hariIni = new Date().toISOString().slice(0,10);
+  function tglLokal(d) {
+    var dua = function (x) { return String(x).padStart(2, '0'); };
+    return d.getFullYear() + '-' + dua(d.getMonth() + 1) + '-' + dua(d.getDate());
+  }
+  var hariIni = tglLokal(new Date());
   el('rkDari').value = hariIni; el('rkSampai').value = hariIni;
 
   function muat(){
@@ -110,6 +139,15 @@
                      '</div></div>';
             }).join('')
           : '<div class="rk-kosong">Belum ada scan pada rentang ini.</div>';
+
+        var tp = 0, tc = 0, to = 0;
+        (o.per_orang || []).forEach(function (p) {
+          tp += Number(p.paket) || 0; tc += Number(p.pcs) || 0;
+          if (Number(p.paket)) to++;
+        });
+        el('rkTotalPaket').textContent = tp.toLocaleString('id-ID');
+        el('rkTotalPcs').textContent = tc.toLocaleString('id-ID');
+        el('rkTotalOrang').textContent = to + ' / ' + (o.per_orang || []).length;
 
         el('rkHari').innerHTML = (o.per_hari || []).length
           ? o.per_hari.map(function(h){
@@ -161,16 +199,60 @@
   });
 
   el('rkTampil').addEventListener('click', muat);
-  el('rkBulan').addEventListener('click', function(){
-    var d = new Date();
-    el('rkDari').value = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0,10);
-    el('rkSampai').value = hariIni; muat();
-  });
+  // Pemilih rentang sama seperti halaman Order: sekali klik pintasan, data
+  // langsung termuat -- tidak perlu menggulir kalender dari awal tiap kali.
+  function pasangRange() {
+    var $r = window.jQuery && jQuery('#rkRange');
+    if (!$r || !$r.daterangepicker) {
+      el('rkRange').type = 'date';
+      el('rkRange').addEventListener('change', function () {
+        el('rkDari').value = el('rkSampai').value = this.value; muat();
+      });
+      return;
+    }
+    var m = window.moment;
+    $r.daterangepicker({
+      locale: {
+        format: 'DD/MM/YYYY', applyLabel: 'Terapkan', cancelLabel: 'Batal',
+        customRangeLabel: 'Pilih sendiri',
+        daysOfWeek: ['Min','Sen','Sel','Rab','Kam','Jum','Sab'],
+        monthNames: ['Januari','Februari','Maret','April','Mei','Juni',
+                     'Juli','Agustus','September','Oktober','November','Desember'],
+        firstDay: 1
+      },
+      opens: 'right', showDropdowns: true,
+      startDate: m(), endDate: m(),
+      maxDate: m(),
+      ranges: {
+        'Hari Ini':          [m(), m()],
+        'Kemarin':           [m().subtract(1,'days'), m().subtract(1,'days')],
+        '7 Hari Terakhir':   [m().subtract(6,'days'), m()],
+        '30 Hari Terakhir':  [m().subtract(29,'days'), m()],
+        'Bulan Ini':         [m().startOf('month'), m()],
+        'Bulan Lalu':        [m().subtract(1,'month').startOf('month'),
+                              m().subtract(1,'month').endOf('month')]
+      }
+    }, function (mulai, akhir) {
+      el('rkDari').value   = mulai.format('YYYY-MM-DD');
+      el('rkSampai').value = akhir.format('YYYY-MM-DD');
+      muat();
+    });
+    $r.val(m().format('DD/MM/YYYY') + ' - ' + m().format('DD/MM/YYYY'));
+  }
+  pasangRange();
   el('rkCari').addEventListener('click', cari);
   el('rkResi').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); cari(); } });
   detak(); muat();
   setInterval(detak, 1000);
   // Angka disegarkan tiap 30 detik supaya HR melihat perkembangan tanpa refresh.
-  setInterval(function () { if (el('rkSampai').value >= hariIni) muat(); }, 30000);
+  // Tiap 5 detik: angka orang, total, dan rincian yang sedang terbuka ikut
+  // menyegarkan diri, jadi HR tidak perlu memuat ulang halaman sama sekali.
+  setInterval(function () {
+    if (el('rkSampai').value < hariIni) return;
+    if (document.hidden) return;
+    muat();
+    var aktif = document.querySelector('.rk-box.aktif');
+    if (aktif) aktif.click();
+  }, 5000);
 })();
 </script>
