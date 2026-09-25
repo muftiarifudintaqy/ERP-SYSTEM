@@ -199,6 +199,19 @@ class Transaction extends BaseController
 
         $brand = $_GET['brand'];
         $keyword = $_GET['keyword'];
+        // Tanggal Bayar: Shopee menghitung "Pesanan Dibayar" dari pay_at,
+        // bukan tanggal order dibuat. Dipakai tim ads sebagai patokan.
+        $pay_start = '';
+        $pay_end = '';
+        if (!empty($_GET['pay_start'])) {
+            $ts = strtotime($_GET['pay_start']);
+            if ($ts) $pay_start = date('Y-m-d H:i:s', $ts);
+        }
+        if (!empty($_GET['pay_end'])) {
+            $ts = strtotime($_GET['pay_end']);
+            if ($ts) $pay_end = date('Y-m-d H:i:s', $ts);
+        }
+
         $rts_start_raw = $_GET['rts_start'] ?? '';
         $rts_end_raw = $_GET['rts_end'] ?? '';
         $rts_date = $_GET['rts_date'] ?? '';
@@ -276,8 +289,11 @@ class Transaction extends BaseController
         $data['store'] = $this->mymodel->selectWithQuery("SELECT shop_id as id, shop_name as opt, opt as marketplace FROM marketplace_config WHERE status = 'Aktif' AND LOWER(opt) <> 'meta' ORDER BY marketplace DESC, shop_name ASC");
 
         $qry = "";
-        $qry = " DATE(date) >= '$start_date'
-        AND DATE(date) <= '$until_date' ";
+        // Dasar hitung sama seperti kartu metrik: 'dibuat' menyaring tanggal
+        // order dibuat, 'bayar' menyaring tanggal pembeli membayar.
+        $kolTgl = ($this->input->get('dasar') === 'bayar') ? 'pay_at' : 'date';
+        $qry = " DATE($kolTgl) >= '$start_date'
+        AND DATE($kolTgl) <= '$until_date' ";
 
         $ids = $_GET['ids'];
         $data['ids'] = $ids;
@@ -309,6 +325,13 @@ class Transaction extends BaseController
 
         if ($cs) {
             $qry .= " AND cs = '$cs' ";
+        }
+
+        if ($pay_start) {
+            $qry .= " AND pay_at >= '".$this->db->escape_str($pay_start)."' ";
+        }
+        if ($pay_end) {
+            $qry .= " AND pay_at <= '".$this->db->escape_str($pay_end)."' ";
         }
 
         if ($rts_start) {
@@ -487,6 +510,19 @@ class Transaction extends BaseController
         $order_status = $_GET['order_status'] ?? '';
         $keyword_category = $_GET['keyword_category'] ?? 'Order ID';
         $c_type = $_GET['c_type'] ?? '';
+        // Tanggal Bayar: Shopee menghitung "Pesanan Dibayar" dari pay_at,
+        // bukan tanggal order dibuat. Dipakai tim ads sebagai patokan.
+        $pay_start = '';
+        $pay_end = '';
+        if (!empty($_GET['pay_start'])) {
+            $ts = strtotime($_GET['pay_start']);
+            if ($ts) $pay_start = date('Y-m-d H:i:s', $ts);
+        }
+        if (!empty($_GET['pay_end'])) {
+            $ts = strtotime($_GET['pay_end']);
+            if ($ts) $pay_end = date('Y-m-d H:i:s', $ts);
+        }
+
         $rts_start_raw = $_GET['rts_start'] ?? '';
         $rts_end_raw = $_GET['rts_end'] ?? '';
         $rts_date = $_GET['rts_date'] ?? '';
@@ -600,8 +636,9 @@ class Transaction extends BaseController
         if ($id_customer) {
             $qry = " customer = '".$this->db->escape_str($id_customer)."' ";
         } else {
-            $qry = " DATE(date) >= '".$this->db->escape_str($start_date)."'
-                    AND DATE(date) <= '".$this->db->escape_str($until_date)."' ";
+            $kolTgl = ($this->input->get('dasar') === 'bayar') ? 'pay_at' : 'date';
+            $qry = " DATE($kolTgl) >= '".$this->db->escape_str($start_date)."'
+                    AND DATE($kolTgl) <= '".$this->db->escape_str($until_date)."' ";
 
             if ($brand == "LAINNYA") {
                 $ids = "";
@@ -632,6 +669,13 @@ class Transaction extends BaseController
 
         if ($cs) {
             $qry .= " AND cs = '".$this->db->escape_str($cs)."' ";
+        }
+
+        if ($pay_start) {
+            $qry .= " AND pay_at >= '".$this->db->escape_str($pay_start)."' ";
+        }
+        if ($pay_end) {
+            $qry .= " AND pay_at <= '".$this->db->escape_str($pay_end)."' ";
         }
 
         if ($rts_start) {

@@ -671,7 +671,11 @@ if (!empty($allProductIds)) {
                         var b = e.target.closest('.mr-tb'); if (!b) return;
                         mrDasarAktif = b.dataset.d;
                         try { localStorage.setItem('mrDasar', mrDasarAktif); } catch (er) {}
-                        muat();
+                        // Tabel ikut berpindah dasar: alamat dimuat ulang dengan
+                        // parameter dasar, supaya daftar order sejalan dengan kartu.
+                        var u = new URL(window.location.href);
+                        u.searchParams.set('dasar', mrDasarAktif);
+                        window.location.href = u.toString();
                       });
                     }
                     if (kotak) {
