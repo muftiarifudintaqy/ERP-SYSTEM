@@ -886,6 +886,14 @@ class Attendance_service
             return empty($att['check_out_at']) ? 'pulang' : null;
         }
 
+        // Lewat jam istirahat: kalau istirahatnya tidak pernah terisi -- orang
+        // masuk siang setelah cron istirahat otomatis lewat, atau memang tidak
+        // istirahat -- tombolnya tidak boleh macet di istirahat. Sesudah pukul
+        // 14:00 langsung ke pulang, karena tidak ada lagi yang bisa dilewatkan.
+        if (date('H:i') >= '14:00') {
+            return empty($att['check_out_at']) ? 'pulang' : null;
+        }
+
         if (empty($att['break_out_at'])) return 'istirahat_keluar';
         if (empty($att['break_in_at']))  return 'istirahat_masuk';
         if (empty($att['check_out_at'])) return 'pulang';
