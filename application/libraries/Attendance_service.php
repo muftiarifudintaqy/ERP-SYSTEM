@@ -848,17 +848,13 @@ class Attendance_service
                 'is_read'=>0, 'created_at'=>date('Y-m-d H:i:s'),
             ]);
 
-            try {
-                $this->CI->pushsender->kirim_ke_user((int)$a['user_id'], $judulNotif, $isiNotif, $urlNotif);
-            } catch (\Throwable $e) {
-                log_message('error', 'push absensi gagal: ' . $e->getMessage());
-            }
-            try {
-                $this->CI->load->library('FcmSender');
-                $this->CI->fcmsender->kirim((int)$a['user_id'], $judulNotif, $isiNotif, $urlNotif, 'absensi');
-            } catch (\Throwable $e) {
-                log_message('error', 'fcm absensi gagal: ' . $e->getMessage());
-            }
+            // Push & FCM ke admin lewat antrean (dikirim Antrean_push via cron,
+            // biasanya dalam ~3 detik). Dulu dikirim di sini dan karyawan harus
+            // menunggu tiap kiriman ke Google selesai sebelum absennya "berhasil".
+            $this->CI->db->insert('push_antrean', [
+                'user_id' => (int)$a['user_id'], 'judul' => $judulNotif, 'isi' => $isiNotif,
+                'url' => $urlNotif, 'kategori' => 'absensi', 'dibuat_at' => date('Y-m-d H:i:s'),
+            ]);
         }
     }
 

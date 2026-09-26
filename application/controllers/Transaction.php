@@ -509,6 +509,21 @@ class Transaction extends BaseController
 
     public function item()
     {
+        // PROFIL-SEMENTARA: ukur waktu & jumlah query tabel Order. Hapus setelah diukur.
+        if ((int)($_SESSION['user']['id'] ?? 0) === 3) {
+            $__t0 = microtime(true); $__db = $this->db; $__db->save_queries = TRUE;
+            $__q0 = count($__db->queries);
+            register_shutdown_function(function () use ($__t0, $__db, $__q0) {
+                $q = array_slice($__db->queries, $__q0); $t = array_slice($__db->query_times, $__q0);
+                arsort($t); $top = '';
+                foreach (array_slice($t, 0, 6, true) as $i => $d)
+                    $top .= sprintf("  %6.1f ms  %s\n", $d * 1000, substr(preg_replace('/\s+/', ' ', $q[$i]), 0, 170));
+                @file_put_contents(APPPATH . 'logs/profil-item.log', sprintf(
+                    "[%s] total %.0f ms | %d query | waktu query %.0f ms | sisa (PHP) %.0f ms\n%s\n",
+                    date('H:i:s'), (microtime(true) - $__t0) * 1000, count($q), array_sum($t) * 1000,
+                    ((microtime(true) - $__t0) - array_sum($t)) * 1000, $top), FILE_APPEND);
+            });
+        }
         $data['template'] = $this->template;
 
         $start_date = $_GET['start_date'] ?? date('Y-m-01');
