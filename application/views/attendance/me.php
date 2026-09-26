@@ -528,6 +528,25 @@
         return punchState && punchState.next_kind === 'istirahat_masuk';
     }
 
+    // GPS dipanaskan sejak halaman dibuka. Dulu lokasi baru dicari setelah
+    // tombol ditekan dengan maximumAge 0, jadi tiap absen menunggu 8-10 detik.
+    // Sekarang posisi terakhir dipakai kalau masih segar (<30 detik) dan cukup
+    // akurat (<100 m); kalau tidak, baru minta posisi baru seperti sebelumnya.
+    // Validasi radius kantor tetap di server, tidak berubah.
+    var posTerakhir = null;
+    if (navigator.geolocation && navigator.geolocation.watchPosition) {
+        try {
+            navigator.geolocation.watchPosition(function(p){ posTerakhir = p; }, function(){},
+                { enableHighAccuracy: true, maximumAge: 15000, timeout: 20000 });
+        } catch (e) {}
+    }
+    function ambilLokasi(ok, gagal, batas){
+        if (posTerakhir && (Date.now() - posTerakhir.timestamp) < 30000
+            && (posTerakhir.coords.accuracy || 9999) <= 100) { ok(posTerakhir); return; }
+        navigator.geolocation.getCurrentPosition(function(p){ posTerakhir = p; ok(p); }, gagal,
+            { enableHighAccuracy: true, timeout: batas, maximumAge: 30000 });
+    }
+
     function mulaiAbsen(){
         if (tanpaWajah()) {
             if (!navigator.geolocation) {
@@ -536,7 +555,7 @@
             }
             Swal.fire({ title: 'Mengambil lokasi...', allowOutsideClick: false,
                         didOpen: function(){ Swal.showLoading(); } });
-            navigator.geolocation.getCurrentPosition(function(pos){
+            ambilLokasi(function(pos){
                 Swal.close();
                 kirimPunch({
                     latitude: pos.coords.latitude,
@@ -547,7 +566,7 @@
             }, function(){
                 Swal.close();
                 kirimPunch({ device_token: getDeviceToken() });
-            }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+            }, 10000);
             return;
         }
 
@@ -559,7 +578,7 @@
             return;
         }
         Swal.fire({ title: 'Mengambil lokasi...', allowOutsideClick: false, didOpen: function(){ Swal.showLoading(); } });
-        navigator.geolocation.getCurrentPosition(function(pos){
+        ambilLokasi(function(pos){
             Swal.close();
             var acc = Math.round(pos.coords.accuracy || 9999);
             adaKamera(function(punyaKamera){
@@ -596,7 +615,7 @@
                     kirimPunch({ device_token: getDeviceToken() });
                 }
             });
-        }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 });
+        }, 8000);
     }
 
     $(document).ready(function(){
