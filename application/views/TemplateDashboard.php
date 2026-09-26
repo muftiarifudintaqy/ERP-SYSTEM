@@ -19,9 +19,9 @@ if (!$_SESSION['is_login']) {
   <!-- Career Tree Visualization CSS -->
   <!-- career-tree.css tidak ada di server, dinonaktifkan supaya tidak 404 -->
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-quartz.css" />
-  <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@36.2.0/styles/ag-grid.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@36.2.0/styles/ag-theme-quartz.css" />
+  <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@36.2.0/dist/ag-grid-community.min.js"></script>
 
   <!-- Include jQuery -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -38,15 +38,14 @@ if (!$_SESSION['is_login']) {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css">
+  <link rel="stylesheet" href="https://unpkg.com/tippy.js@6.3.7/dist/tippy.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/id.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13"></script>
+  <!-- chart.js 4.5.1 CDN dimatikan: ditimpa versi lokal 4.2.1 di bawah -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <!-- D3.js v7 for Career Tree Visualization -->
@@ -129,12 +128,13 @@ if (!$_SESSION['is_login']) {
   <meta property="og:image:width" content="1000" />
   <meta property="og:image:height" content="1000" />
 
-  <link rel="stylesheet" href="https://icons.getbootstrap.com/assets/font/bootstrap-icons.css">
-  <link href="https://pictogrammers.github.io/@mdi/font/2.0.46/css/materialdesignicons.min.css" media="all" rel="stylesheet" type="text/css" />
+  <!-- <link rel="stylesheet" href="https://icons.getbootstrap.com/assets/font/bootstrap-icons.css"> (dobel, sudah dimuat dari jsdelivr) -->
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@2.0.46/css/materialdesignicons.min.css" media="all" rel="stylesheet" type="text/css" />
 
 
   <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js@3.3.2/dist/chart.min.js"></script> -->
   <script src="<?= base_url() ?>assets/chart/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
   <script src="<?= base_url() ?>assets/chart/gauge.min.js"></script>
   <script src="<?= base_url() ?>assets/js/reward-effects.js?v=<?= @filemtime(FCPATH . 'assets/js/reward-effects.js') ?>"></script>
 
@@ -168,8 +168,8 @@ if (!$_SESSION['is_login']) {
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
-  <script src="https://unpkg.com/@popperjs/core@2"></script>
-  <script src="https://unpkg.com/tippy.js@6"></script>
+  <script src="https://unpkg.com/@popperjs/core@2.11.8"></script>
+  <script src="https://unpkg.com/tippy.js@6.3.7"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
