@@ -17,7 +17,9 @@ if ($_SESSION['is_login']) {
   <link rel="shortcut icon" type="image/png" href="<?= base_url() ?>assets/img/fav.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://icons.getbootstrap.com/assets/font/bootstrap-icons.css">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://ajax.googleapis.com" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <link rel="stylesheet" href="<?= base_url() ?>assets/css/style.css?v=1.0.1" type="text/css" media="screen" />
 
   <?php
