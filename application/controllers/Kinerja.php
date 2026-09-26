@@ -94,6 +94,9 @@ class Kinerja extends BaseController
     public function push_subscribe()
     {
         $uid = $this->_uid();
+        // Hanya membaca sesi: kunci dilepas supaya permintaan lain dari user
+        // yang sama tidak ikut antre menunggu (sesi CI memakai berkas + kunci).
+        if (session_status() === PHP_SESSION_ACTIVE) { session_write_close(); }
         @file_put_contents('/var/log/apache2/push-debug.log', date('H:i:s')
             . ' uid=' . var_export($uid, true)
             . ' endpoint=' . substr((string)$this->input->post('endpoint'), 0, 45)
@@ -1706,6 +1709,9 @@ class Kinerja extends BaseController
         header('Content-Type: application/json');
         $uid = $this->_uid();
         if (!$uid) { echo json_encode(array('status'=>false)); return; }
+        // Hanya membaca sesi: kunci dilepas supaya permintaan lain dari user
+        // yang sama tidak ikut antre menunggu (sesi CI memakai berkas + kunci).
+        if (session_status() === PHP_SESSION_ACTIVE) { session_write_close(); }
         $rows = $this->mymodel->selectWithQuery("SELECT * FROM notifications WHERE user_id=$uid AND read_at IS NULL ORDER BY id ASC LIMIT 20");
         echo json_encode(array('status'=>true,'data'=>$rows));
     }

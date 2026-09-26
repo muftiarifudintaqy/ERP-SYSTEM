@@ -581,6 +581,11 @@ class Transaction extends BaseController
             $_SESSION['transaction_limit'] = $limit;
         }
 
+        // Pilihan tampilan dan jumlah baris sudah tersimpan di atas; sisa fungsi
+        // ini hanya membaca. Kunci sesi dilepas supaya notifikasi, pengumuman,
+        // dan metrik tidak antre ~2 detik menunggu query tabel Order selesai.
+        if (session_status() === PHP_SESSION_ACTIVE) { session_write_close(); }
+
         if (!$rts_start && !$rts_end && $rts_date) {
             $start_ts = strtotime($rts_date . ' 00:00:00');
             $end_ts = strtotime($rts_date . ' 23:59:59');

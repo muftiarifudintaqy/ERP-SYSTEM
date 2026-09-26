@@ -147,6 +147,9 @@ class Notifications extends BaseController
     public function get_unread_count()
     {
         $user_id = $_SESSION['user']['id'];
+        // Hanya membaca sesi: kunci dilepas supaya permintaan lain dari user
+        // yang sama tidak ikut antre menunggu (sesi CI memakai berkas + kunci).
+        if (session_status() === PHP_SESSION_ACTIVE) { session_write_close(); }
         
         $count = $this->mymodel->selectWithQuery("
             SELECT COUNT(id) as count 

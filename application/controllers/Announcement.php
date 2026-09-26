@@ -242,6 +242,9 @@ class Announcement extends BaseController
         // unlike session_id() which rotates every 5 min and caused the popup to
         // reappear on every tab/page switch).
         $sid = $this->db->escape_str($this->login_token());
+        // Token sudah tersimpan di sesi; sisanya hanya membaca. Kunci sesi
+        // dilepas supaya permintaan lain dari user yang sama tidak antre.
+        if (session_status() === PHP_SESSION_ACTIVE) { session_write_close(); }
 
         $rows = $this->mymodel->selectWithQuery("
             SELECT id, title, description, image, cta_label, cta_url, frequency, updated_at
